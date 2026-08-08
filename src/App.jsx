@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { MenuSection } from './components/MenuSection';
 import { AdminDashboard } from './components/AdminDashboard';
+import { KitchenApp } from './components/KitchenApp';
 import { LocationModal } from './components/LocationModal';
 import { CartDrawer } from './components/CartDrawer';
 import { OrderTracker } from './components/OrderTracker';
@@ -10,6 +11,10 @@ import { Sparkles, MapPin, Phone, Heart } from 'lucide-react';
 
 const MainContent = () => {
   const { activeTab, toastMessage } = useApp();
+
+  if (activeTab === 'kitchen') {
+    return <KitchenApp />;
+  }
 
   return (
     <div className="app-container">
@@ -24,7 +29,7 @@ const MainContent = () => {
       {/* Main Header */}
       <Header />
 
-      {/* Dynamic View (Customer Menu vs Kitchen Admin) */}
+      {/* Dynamic View (Customer Menu vs Kitchen Admin Dashboard) */}
       {activeTab === 'customer' ? <MenuSection /> : <AdminDashboard />}
 
       {/* Modals & Overlays */}

@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DEFAULT_PINCODES } from '../data/initialPincodes';
-import { INITIAL_MENU } from '../data/initialMenu';
+import { INITIAL_MENU, INITIAL_CATEGORIES } from '../data/initialMenu';
 import { INITIAL_COUPONS } from '../data/initialCoupons';
 import {
   subscribeToCollection,
@@ -17,6 +17,12 @@ export const AppProvider = ({ children }) => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'takeaway') return 'takeaway';
     return localStorage.getItem('de_order_mode') || 'delivery';
+  });
+
+  // Categories Management
+  const [categories, setCategories] = useState(() => {
+    const saved = localStorage.getItem('de_categories');
+    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
   });
 
   // Pincode Management
@@ -51,9 +57,10 @@ export const AppProvider = ({ children }) => {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // View switch: 'customer' or 'admin'
+  // View switch: 'customer', 'admin', or 'kitchen'
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'kitchen' || window.location.hash === '#kitchen') return 'kitchen';
     if (params.get('view') === 'admin' || window.location.hash === '#admin') return 'admin';
     return 'customer';
   });
@@ -70,34 +77,40 @@ export const AppProvider = ({ children }) => {
 
   const [isOrderTrackerOpen, setIsOrderTrackerOpen] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isRinging, setIsRinging] = useState(false);
+
+  // Audio Context Ref for Continuous Kitchen Ringer
+  const ringerIntervalRef = useRef(null);
 
   // Notification Toast message
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Firebase Real-time Firestore Subscribers
+  // Firebase Real-time Subscribers
   useEffect(() => {
-    // 1. Subscribe to Firebase Orders
     const unsubOrders = subscribeToCollection('orders', (fsOrders) => {
       if (fsOrders && fsOrders.length > 0) {
         setOrders(fsOrders);
       }
     });
 
-    // 2. Subscribe to Firebase Menu
+    const unsubCategories = subscribeToCollection('categories', (fsCategories) => {
+      if (fsCategories && fsCategories.length > 0) {
+        setCategories(fsCategories);
+      }
+    });
+
     const unsubMenu = subscribeToCollection('menu', (fsMenu) => {
       if (fsMenu && fsMenu.length > 0) {
         setMenuItems(fsMenu);
       }
     });
 
-    // 3. Subscribe to Firebase Coupons
     const unsubCoupons = subscribeToCollection('coupons', (fsCoupons) => {
       if (fsCoupons && fsCoupons.length > 0) {
         setCoupons(fsCoupons);
       }
     });
 
-    // 4. Subscribe to Firebase Pincodes
     const unsubPincodes = subscribeToCollection('pincodes', (fsPincodes) => {
       if (fsPincodes && fsPincodes.length > 0) {
         setPincodes(fsPincodes);
@@ -106,11 +119,58 @@ export const AppProvider = ({ children }) => {
 
     return () => {
       unsubOrders();
+      unsubCategories();
       unsubMenu();
       unsubCoupons();
       unsubPincodes();
     };
   }, []);
+
+  // Check for pending RECEIVED orders & handle continuous ringer
+  useEffect(() => {
+    const pendingReceived = orders.filter(o => o.status === 'RECEIVED');
+    if (pendingReceived.length > 0 && (activeTab === 'admin' || activeTab === 'kitchen') && !isAudioMuted) {
+      startRingerLoop();
+    } else {
+      stopRingerLoop();
+    }
+  }, [orders, activeTab, isAudioMuted]);
+
+  const startRingerLoop = () => {
+    if (ringerIntervalRef.current) return;
+    setIsRinging(true);
+    playRingerBeep();
+    ringerIntervalRef.current = setInterval(() => {
+      playRingerBeep();
+    }, 1200);
+  };
+
+  const stopRingerLoop = () => {
+    if (ringerIntervalRef.current) {
+      clearInterval(ringerIntervalRef.current);
+      ringerIntervalRef.current = null;
+    }
+    setIsRinging(false);
+  };
+
+  const playRingerBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+      osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.15); // D6
+      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+      console.warn("Ringer audio play issue", e);
+    }
+  };
 
   // BroadcastChannel for multi-tab real-time sync
   useEffect(() => {
@@ -121,16 +181,16 @@ export const AppProvider = ({ children }) => {
         const { type, data } = event.data;
         if (type === 'NEW_ORDER') {
           setOrders(prev => [data, ...prev]);
-          if (activeTab === 'admin') {
+          if (activeTab === 'admin' || activeTab === 'kitchen') {
             showToast(`🔔 New Order #${data.id.slice(-4)} Received (${data.orderMode.toUpperCase()})!`);
-            playAudioAlert();
           }
         } else if (type === 'UPDATE_ORDER_STATUS') {
           setOrders(prev => prev.map(o => o.id === data.id ? { ...o, ...data } : o));
           if (activeOrderId === data.id) {
-            playAudioAlert();
             showToast(`⭐ Order #${data.id.slice(-4)} status updated: ${data.status.replace(/_/g, ' ').toUpperCase()}`);
           }
+        } else if (type === 'UPDATE_CATEGORIES') {
+          setCategories(data);
         } else if (type === 'UPDATE_PINCODES') {
           setPincodes(data);
         } else if (type === 'UPDATE_MENU') {
@@ -152,6 +212,11 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('de_order_mode', orderMode);
   }, [orderMode]);
+
+  useEffect(() => {
+    localStorage.setItem('de_categories', JSON.stringify(categories));
+    broadcastSync('UPDATE_CATEGORIES', categories);
+  }, [categories]);
 
   useEffect(() => {
     localStorage.setItem('de_pincodes', JSON.stringify(pincodes));
@@ -203,24 +268,23 @@ export const AppProvider = ({ children }) => {
     }, 4500);
   };
 
-  const playAudioAlert = () => {
-    if (isAudioMuted) return;
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.5);
-    } catch (e) {
-      console.warn("Audio playback issue", e);
-    }
+  // Category CRUD
+  const addCategory = (categoryObj) => {
+    const newCat = {
+      id: categoryObj.id || categoryObj.name.toLowerCase().replace(/\s+/g, '-'),
+      name: categoryObj.name,
+      icon: categoryObj.icon || 'Utensils'
+    };
+    setCategories(prev => [...prev, newCat]);
+    saveFirestoreDoc('categories', newCat.id, newCat);
+    showToast(`Added Category: ${newCat.name}`);
+  };
+
+  const deleteCategory = (catId) => {
+    if (catId === 'all') return;
+    setCategories(prev => prev.filter(c => c.id !== catId));
+    deleteFirestoreDoc('categories', catId);
+    showToast('Category removed');
   };
 
   // Serviceability Checker
@@ -342,7 +406,6 @@ export const AppProvider = ({ children }) => {
     saveFirestoreDoc('orders', newOrder.id, newOrder);
 
     broadcastSync('NEW_ORDER', newOrder);
-    playAudioAlert();
     showToast(`🎉 Order #${newOrder.id} placed successfully!`);
     return newOrder;
   };
@@ -369,6 +432,12 @@ export const AppProvider = ({ children }) => {
 
     if (updatedObj) {
       saveFirestoreDoc('orders', orderId, updatedObj);
+    }
+
+    // Stop continuous ringer if all RECEIVED orders accepted
+    const remainingReceived = orders.filter(o => o.id !== orderId && o.status === 'RECEIVED');
+    if (remainingReceived.length === 0) {
+      stopRingerLoop();
     }
 
     showToast(`Order #${orderId.slice(-4)} status updated to ${newStatus}`);
@@ -421,7 +490,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Coupon CRUD (Syncs to Firestore Database)
+  // Coupon CRUD
   const saveCoupon = (couponData) => {
     const formatted = { ...couponData, code: couponData.code.toUpperCase() };
     setCoupons(prev => {
@@ -460,7 +529,7 @@ export const AppProvider = ({ children }) => {
     showToast(`Deleted Coupon ${code}`);
   };
 
-  // Pincode CRUD for Admin (Syncs to Firestore Database)
+  // Pincode CRUD for Admin
   const addPincode = (pincodeObj) => {
     const newPin = { ...pincodeObj, active: true };
     setPincodes(prev => [...prev, newPin]);
@@ -492,6 +561,9 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider value={{
       orderMode,
       setOrderMode,
+      categories,
+      addCategory,
+      deleteCategory,
       pincodes,
       selectedPincode,
       setSelectedPincode,
@@ -527,6 +599,10 @@ export const AppProvider = ({ children }) => {
       setIsOrderTrackerOpen,
       isAudioMuted,
       setIsAudioMuted,
+      isRinging,
+      startRingerLoop,
+      stopRingerLoop,
+      playRingerBeep,
       placeOrder,
       updateOrderStatus,
       addPincode,

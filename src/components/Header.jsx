@@ -1,23 +1,18 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { MapPin, Store, Bike, ShieldCheck, UtensilsCrossed } from 'lucide-react';
+import { ShoppingBag, MapPin, ChefHat, Store, Smartphone } from 'lucide-react';
 
 export const Header = () => {
   const {
     orderMode,
     setOrderMode,
     selectedPincode,
-    checkServiceability,
     setIsLocationModalOpen,
     cartItemCount,
     setIsCartOpen,
     activeTab,
-    setActiveTab,
-    orders
+    setActiveTab
   } = useApp();
-
-  const currentArea = checkServiceability(selectedPincode);
-  const pendingOrdersCount = orders.filter(o => o.status === 'RECEIVED' || o.status === 'PREPARING').length;
 
   return (
     <header className="main-header">
@@ -27,60 +22,62 @@ export const Header = () => {
           <img src="/logo.png" alt="Desi Eats Logo" className="brand-logo-img" />
         </button>
 
-        {/* Center Mode Switcher (Delivery vs Takeaway) */}
-        {activeTab === 'customer' && (
-          <div className="mode-switcher">
-            <button
-              className={`mode-btn ${orderMode === 'delivery' ? 'active delivery' : ''}`}
-              onClick={() => setOrderMode('delivery')}
-            >
-              <Bike size={15} />
-              <span>Delivery</span>
-            </button>
+        {/* Order Mode Switcher: Delivery vs Takeaway */}
+        <div className="mode-switcher">
+          <button
+            className={`mode-btn ${orderMode === 'delivery' ? 'active delivery' : ''}`}
+            onClick={() => setOrderMode('delivery')}
+          >
+            🛵 Delivery
+          </button>
+          <button
+            className={`mode-btn ${orderMode === 'takeaway' ? 'active takeaway' : ''}`}
+            onClick={() => setOrderMode('takeaway')}
+          >
+            🥡 Takeaway Spot
+          </button>
+        </div>
 
-            <button
-              className={`mode-btn ${orderMode === 'takeaway' ? 'active takeaway' : ''}`}
-              onClick={() => setOrderMode('takeaway')}
-            >
-              <Store size={15} />
-              <span>Takeaway</span>
-            </button>
-          </div>
+        {/* Selected Location / PIN Badge */}
+        {orderMode === 'delivery' ? (
+          <button className="location-badge-btn" onClick={() => setIsLocationModalOpen(true)}>
+            <MapPin size={16} color="#d85d27" />
+            <span>PIN: {selectedPincode} (Rajarhat)</span>
+          </button>
+        ) : (
+          <button className="location-badge-btn" style={{ background: '#fef3c7', borderColor: '#f59e0b', color: '#b45309' }}>
+            <Store size={16} color="#b45309" />
+            <span>Spot Takeaway (No Delivery Fee)</span>
+          </button>
         )}
 
-        {/* Right Section */}
+        {/* Header Right Actions */}
         <div className="header-right">
-          {/* Location Badge (If Delivery Mode) */}
-          {activeTab === 'customer' && orderMode === 'delivery' && (
-            <button className="location-badge-btn" onClick={() => setIsLocationModalOpen(true)}>
-              <MapPin size={15} color="#d85d27" />
-              <span>{currentArea ? currentArea.area.split('/')[0] : 'Location'} ({selectedPincode})</span>
-            </button>
-          )}
-
-          {/* Admin Switcher */}
+          {/* Dedicated Kitchen App Launcher */}
           <button
             className="view-toggle-btn"
-            onClick={() => setActiveTab(activeTab === 'customer' ? 'admin' : 'customer')}
+            style={{ background: activeTab === 'kitchen' ? '#1e293b' : 'rgba(230, 160, 36, 0.1)', color: activeTab === 'kitchen' ? '#fff' : '#164324', border: '1px solid #e5a024' }}
+            onClick={() => setActiveTab(activeTab === 'kitchen' ? 'customer' : 'kitchen')}
           >
-            <ShieldCheck size={16} />
-            <span className="desktop-only">{activeTab === 'customer' ? 'Kitchen Admin' : 'Customer View'}</span>
-            <span className="mobile-only">{activeTab === 'customer' ? 'Admin' : 'Menu'}</span>
-            {activeTab === 'customer' && pendingOrdersCount > 0 && (
-              <span className="cart-badge" style={{ background: '#d85d27', color: 'white' }}>
-                {pendingOrdersCount}
-              </span>
-            )}
+            <Smartphone size={16} />
+            <span>{activeTab === 'kitchen' ? 'Storefront' : '📱 Kitchen App'}</span>
           </button>
 
-          {/* "My Plate" Button */}
-          {activeTab === 'customer' && (
-            <button className="cart-icon-btn" onClick={() => setIsCartOpen(true)}>
-              <UtensilsCrossed size={16} />
-              <span>My Plate</span>
-              {cartItemCount > 0 && <span className="cart-badge">{cartItemCount}</span>}
-            </button>
-          )}
+          {/* Kitchen Admin Portal Switcher */}
+          <button
+            className="view-toggle-btn"
+            onClick={() => setActiveTab(activeTab === 'admin' ? 'customer' : 'admin')}
+          >
+            <ChefHat size={16} />
+            <span>{activeTab === 'admin' ? 'Customer View' : 'Kitchen Admin'}</span>
+          </button>
+
+          {/* My Plate Cart Drawer Badge Button */}
+          <button className="cart-icon-btn" onClick={() => setIsCartOpen(true)}>
+            <ShoppingBag size={20} />
+            <span>My Plate</span>
+            {cartItemCount > 0 && <span className="cart-badge">{cartItemCount}</span>}
+          </button>
         </div>
       </div>
     </header>
