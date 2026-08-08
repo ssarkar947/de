@@ -7,13 +7,19 @@ import { KitchenApp } from './components/KitchenApp';
 import { LocationModal } from './components/LocationModal';
 import { CartDrawer } from './components/CartDrawer';
 import { OrderTracker } from './components/OrderTracker';
+import { AuthModal } from './components/AuthModal';
 import { Sparkles, MapPin, Phone, Heart } from 'lucide-react';
 
 const MainContent = () => {
   const { activeTab, toastMessage } = useApp();
 
   if (activeTab === 'kitchen') {
-    return <KitchenApp />;
+    return (
+      <>
+        <KitchenApp />
+        <AuthModal />
+      </>
+    );
   }
 
   return (
@@ -36,6 +42,7 @@ const MainContent = () => {
       <LocationModal />
       <CartDrawer />
       <OrderTracker />
+      <AuthModal />
 
       {/* Footer with Official Brand Info & Phone Number */}
       <footer style={{ background: '#164324', color: 'white', padding: '40px 24px', marginTop: 'auto', borderTop: '4px solid #e5a024' }}>

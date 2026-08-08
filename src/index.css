@@ -813,6 +813,12 @@ body {
 .badge-takeaway { background: #fef3c7; color: #b45309; }
 
 /* Responsive adjustments */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   .hero-order-inner {
     grid-template-columns: 1fr;

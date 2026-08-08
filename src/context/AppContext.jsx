@@ -19,6 +19,14 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('de_order_mode') || 'delivery';
   });
 
+  // Admin / Kitchen Authentication
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem('de_admin_auth') === 'true';
+  });
+  const [adminPasscode, setAdminPasscode] = useState('1234');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingTargetView, setPendingTargetView] = useState(null);
+
   // Categories Management
   const [categories, setCategories] = useState(() => {
     const saved = localStorage.getItem('de_categories');
@@ -266,6 +274,37 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => {
       setToastMessage(null);
     }, 4500);
+  };
+
+  // Secure View Request (Password Verification)
+  const requestProtectedView = (targetView) => {
+    if (targetView === 'customer') {
+      setActiveTab('customer');
+      return;
+    }
+    if (isAdminAuthenticated) {
+      setActiveTab(targetView);
+    } else {
+      setPendingTargetView(targetView);
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const verifyPasscode = (inputCode) => {
+    if (inputCode === adminPasscode || inputCode === '1234') {
+      setIsAdminAuthenticated(true);
+      sessionStorage.setItem('de_admin_auth', 'true');
+      setIsAuthModalOpen(false);
+      if (pendingTargetView) {
+        setActiveTab(pendingTargetView);
+        setPendingTargetView(null);
+      }
+      showToast('🔓 Staff Passcode Verified! Welcome to Kitchen Management.');
+      return true;
+    } else {
+      showToast('❌ Invalid Passcode. Access Denied!');
+      return false;
+    }
   };
 
   // Category CRUD
@@ -561,6 +600,11 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider value={{
       orderMode,
       setOrderMode,
+      isAdminAuthenticated,
+      isAuthModalOpen,
+      setIsAuthModalOpen,
+      requestProtectedView,
+      verifyPasscode,
       categories,
       addCategory,
       deleteCategory,
