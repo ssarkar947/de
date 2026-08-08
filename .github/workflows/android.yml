@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
 
       - name: Install Node Dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Build Web Dist
         run: npm run build
