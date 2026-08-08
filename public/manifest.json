@@ -1,0 +1,16 @@
+{
+  "short_name": "DesiEats Kitchen",
+  "name": "Desi Eats Kitchen Partner App",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/?view=kitchen",
+  "background_color": "#0f172a",
+  "theme_color": "#164324",
+  "display": "standalone",
+  "orientation": "portrait"
+}
