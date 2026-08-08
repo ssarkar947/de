@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Comfortaa:wght@600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
 
 :root {
   --primary-green: #164324;
@@ -7,7 +7,7 @@
   --accent-gold-light: #fef4e2;
   --terracotta: #d85d27;
   --terracotta-hover: #be4c1a;
-  --bg-ivory: #fdfbf7;
+  --bg-ivory: #fef8eb;
   --card-bg: #ffffff;
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
@@ -20,7 +20,8 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 9999px;
-  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-main: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-brand: 'Fredoka', 'Comfortaa', cursive, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
 }
 
@@ -94,7 +95,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 248, 235, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(229, 231, 235, 0.8);
   box-shadow: var(--shadow-sm);
@@ -120,7 +121,7 @@ body {
 }
 
 .brand-logo-img {
-  height: 48px;
+  height: 52px;
   object-fit: contain;
 }
 
@@ -142,7 +143,8 @@ body {
   background: transparent;
   color: var(--text-secondary);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: var(--font-brand);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -168,7 +170,7 @@ body {
   padding: 8px 14px;
   border-radius: var(--radius-full);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #92400e;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -212,8 +214,9 @@ body {
   border: none;
   padding: 10px 18px;
   border-radius: var(--radius-full);
+  font-family: var(--font-brand);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(216, 93, 39, 0.3);
   transition: all 0.2s ease;
@@ -237,13 +240,13 @@ body {
 }
 
 /* =========================================================
-   NEW HERO ORDER SECTION (MATCHING SCREENSHOT)
+   HERO ORDER SECTION (WITH ROUNDED BRAND TYPOGRAPHY)
    ========================================================= */
 .hero-order-section {
   background: #164324;
   color: white;
   padding: 60px 24px;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 28px 28px;
   position: relative;
   overflow: hidden;
 }
@@ -259,8 +262,9 @@ body {
 
 .hero-subhead {
   color: #d85d27;
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-size: 0.9rem;
+  font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   display: block;
@@ -268,11 +272,11 @@ body {
 }
 
 .hero-title {
-  font-family: var(--font-serif);
-  font-size: 3.2rem;
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-size: 3.4rem;
+  font-weight: 700;
   line-height: 1.15;
-  color: #fdfbf7;
+  color: #fef8eb;
   letter-spacing: -0.5px;
 }
 
@@ -290,7 +294,7 @@ body {
 
 .hero-select-card {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 28px 24px;
   color: #1f2937;
   cursor: pointer;
@@ -323,8 +327,9 @@ body {
 }
 
 .hero-card-title {
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-size: 1.35rem;
+  font-weight: 700;
   color: #1f2937;
   margin-bottom: 4px;
 }
@@ -353,14 +358,15 @@ body {
   margin-top: 4px;
 }
 .hero-location-note h4 {
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-size: 1.15rem;
+  font-weight: 700;
   color: #ffffff;
   margin-bottom: 4px;
 }
 .hero-location-note p {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Category Bar */
@@ -395,8 +401,9 @@ body {
   border: 1px solid var(--border-color);
   background: white;
   color: var(--text-secondary);
+  font-family: var(--font-brand);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -464,8 +471,8 @@ body {
 }
 
 .section-title {
-  font-family: var(--font-serif);
-  font-size: 1.75rem;
+  font-family: var(--font-brand);
+  font-size: 1.85rem;
   font-weight: 700;
   margin-bottom: 24px;
   color: var(--primary-green);
@@ -571,14 +578,16 @@ body {
   margin-bottom: 8px;
 }
 .food-title {
-  font-size: 1.1rem;
+  font-family: var(--font-brand);
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
 }
 .food-price {
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--primary-green);
   white-space: nowrap;
 }
@@ -616,6 +625,7 @@ body {
   border: none;
   padding: 8px 16px;
   border-radius: var(--radius-full);
+  font-family: var(--font-brand);
   font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
@@ -667,7 +677,8 @@ body {
   justify-content: space-between;
 }
 .modal-header h3 {
-  font-size: 1.2rem;
+  font-family: var(--font-brand);
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary-green);
 }
@@ -758,6 +769,7 @@ body {
 }
 .admin-nav-tab {
   padding: 10px 20px;
+  font-family: var(--font-brand);
   font-weight: 700;
   font-size: 0.95rem;
   border: none;
@@ -807,7 +819,7 @@ body {
     gap: 32px;
   }
   .hero-title {
-    font-size: 2.4rem;
+    font-size: 2.5rem;
   }
 }
 
