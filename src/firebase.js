@@ -12,14 +12,14 @@ import {
   orderBy
 } from 'firebase/firestore';
 
-// Default Firebase Configuration (Can be overridden via .env variables)
+// Sourav's Official Firebase Configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDemoKeyDesiEatsOnline2026",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBJ2U4Yu-wjml3K2W1S8Varoie90tvHMq4",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "desieats-online.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "desieats-online",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "desieats-online.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "987654321012",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:987654321012:web:abcdef123456"
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "desieats-online.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "881044837279",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:881044837279:web:6e2ae8ef3c1046fe2be3aa"
 };
 
 let app = null;
@@ -30,14 +30,14 @@ try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   isFirebaseConnected = true;
-  console.log("🔥 Firebase initialized successfully for desieats.online");
+  console.log("🔥 Connected to Sourav's Firebase Project [desieats-online]!");
 } catch (e) {
-  console.warn("⚠️ Firebase initialization fallback to local database mode:", e);
+  console.warn("⚠️ Firebase fallback mode active:", e);
 }
 
 export { app, db, isFirebaseConnected };
 
-// Real-Time Listener Helper
+// Real-Time Collection Subscriber
 export const subscribeToCollection = (collectionName, callback, orderField = null) => {
   if (!db) return () => {};
   try {
@@ -48,7 +48,7 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       callback(data);
     }, (error) => {
-      console.warn(`Firestore collection [${collectionName}] read issue, operating locally:`, error);
+      console.warn(`Firestore collection [${collectionName}] read issue:`, error);
     });
   } catch (err) {
     console.warn(`Failed to subscribe to ${collectionName}:`, err);
@@ -56,7 +56,7 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
   }
 };
 
-// Save / Update Document
+// Save / Merge Document
 export const saveFirestoreDoc = async (collectionName, docId, data) => {
   if (!db) return false;
   try {
