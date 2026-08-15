@@ -6,7 +6,7 @@ export const INITIAL_CATEGORIES = [
 ];
 
 export const INITIAL_MENU = [
-  // ==================== NON-VEG COMBOS (₹199 FLAT) ====================
+  // ==================== NON-VEG COMBOS ====================
   // Group 1: Kosha Chicken Combos
   {
     id: 'de-nv-01',
@@ -331,7 +331,7 @@ export const INITIAL_MENU = [
     ]
   },
 
-  // ==================== VEG COMBOS (₹199 FLAT) ====================
+  // ==================== VEG COMBOS ====================
   // Group 1: Shahi Paneer Combos
   {
     id: 'de-vg-01',
@@ -653,7 +653,7 @@ export const INITIAL_MENU = [
     ]
   },
 
-  // ==================== HEALTHY COMBOS (₹199 FLAT) ====================
+  // ==================== HEALTHY COMBOS ====================
   {
     id: 'de-hl-01',
     name: 'Veg Rice with Desi Ghee Tossed Veggies + Grilled Chicken Breast + Sunny Side Up / Scrambled Eggs',

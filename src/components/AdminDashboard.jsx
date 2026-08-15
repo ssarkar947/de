@@ -416,7 +416,7 @@ export const AdminDashboard = () => {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => {
-                  if (window.confirm('Reset all menu items to the standard 36 combos @ ₹199 flat price?')) {
+                  if (window.confirm('Reset all menu items to the default menu?')) {
                     resetMenuToDefault();
                   }
                 }}
@@ -431,7 +431,7 @@ export const AdminDashboard = () => {
                   fontSize: '0.85rem'
                 }}
               >
-                🔄 Reset to 36 Combos (₹199 Flat)
+                🔄 Reset to Default Menu
               </button>
 
               <button

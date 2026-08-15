@@ -108,11 +108,11 @@ export const MenuSection = () => {
       {/* Menu Grid Container */}
       <div className="menu-container">
         <h2 className="section-title">
-          {activeCategory === 'all' && '🔥 All Combos & Platters (₹199 Flat)'}
-          {activeCategory === 'non-veg-combos' && '🍗 Non-Veg Combos (₹199 Flat)'}
-          {activeCategory === 'veg-combos' && '🧀 Veg Combos (₹199 Flat)'}
-          {activeCategory === 'healthy-combos' && '🥗 Healthy Combos (₹199 Flat)'}
-          {!['all', 'non-veg-combos', 'veg-combos', 'healthy-combos'].includes(activeCategory) && `${categories.find(c => c.id === activeCategory)?.name || 'Menu Items'} (₹199 Flat)`}
+          {activeCategory === 'all' && '🔥 All Combos & Platters'}
+          {activeCategory === 'non-veg-combos' && '🍗 Non-Veg Combos'}
+          {activeCategory === 'veg-combos' && '🧀 Pure Veg Combos'}
+          {activeCategory === 'healthy-combos' && '🥗 Healthy Combos'}
+          {!['all', 'non-veg-combos', 'veg-combos', 'healthy-combos'].includes(activeCategory) && (categories.find(c => c.id === activeCategory)?.name || 'Menu Items')}
           <span style={{ fontSize: '1rem', color: '#9ca3af', fontWeight: '400', marginLeft: 8 }}>({filteredItems.length} items)</span>
         </h2>
 

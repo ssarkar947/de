@@ -550,7 +550,7 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
     broadcastSync('UPDATE_MENU', INITIAL_MENU);
     broadcastSync('UPDATE_CATEGORIES', INITIAL_CATEGORIES);
-    showToast('Menu refreshed to all 36 combos at ₹199 flat price!');
+    showToast('Menu reset to default items!');
   };
 
   // Coupon CRUD
