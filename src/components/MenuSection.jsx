@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { FoodCard } from './FoodCard';
 import { HeroOrderSelector } from './HeroOrderSelector';
-import { Search, Sparkles, Utensils, Flame, Sandwich, Soup, Wheat, Coffee, Heart, Leaf } from 'lucide-react';
+import { Search, Sparkles, Utensils, Flame, Sandwich, Soup, Wheat, Coffee, Heart, Leaf, Lock, ChefHat, Smartphone } from 'lucide-react';
 
 const categoryIconMap = {
   Utensils, Sparkles, Flame, Sandwich, Soup, Wheat, Coffee, Heart, Leaf
 };
 
 export const MenuSection = () => {
-  const { menuItems, categories, activeOrderId, setIsOrderTrackerOpen, orders } = useApp();
+  const { menuItems, categories, activeOrderId, setIsOrderTrackerOpen, orders, requestProtectedView } = useApp();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
@@ -129,6 +129,78 @@ export const MenuSection = () => {
             <p style={{ fontSize: '0.9rem' }}>Try clearing your search query or changing category.</p>
           </div>
         )}
+      </div>
+
+      {/* Staff & Admin Backend Access Section at Footer of Menu */}
+      <div style={{ maxWidth: 1280, margin: '20px auto 40px', padding: '0 20px' }}>
+        <div style={{
+          background: '#ffffff',
+          borderRadius: 16,
+          border: '1px solid #e5e7eb',
+          padding: '20px 24px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 16
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(22, 67, 36, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Lock size={22} color="#164324" />
+            </div>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#164324', fontFamily: 'var(--font-brand)' }}>
+                Restaurant Staff & Admin Access
+              </h4>
+              <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: '#6b7280' }}>
+                Backend controls for live orders, KOT printing, kitchen screen & menu editing
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => requestProtectedView('admin')}
+              style={{
+                background: '#164324',
+                color: 'white',
+                border: 'none',
+                padding: '10px 18px',
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <ChefHat size={16} color="#e5a024" />
+              <span>Admin Login</span>
+            </button>
+
+            <button
+              onClick={() => requestProtectedView('kitchen')}
+              style={{
+                background: '#fef3c7',
+                color: '#b45309',
+                border: '1px solid #fde68a',
+                padding: '10px 16px',
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <Smartphone size={16} />
+              <span>Kitchen Screen</span>
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   );
