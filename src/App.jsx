@@ -84,8 +84,8 @@ const MainContent = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ShieldCheck size={20} color="#e5a024" />
             <div>
-              <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#fde68a' }}>Staff Backend Portal</span>
-              <p style={{ margin: 0, fontSize: '0.78rem', opacity: 0.8 }}>Mobile & Desktop Admin Access (Passcode: 1234)</p>
+              <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#fde68a' }}>Staff & Admin Portal</span>
+              <p style={{ margin: 0, fontSize: '0.78rem', opacity: 0.8 }}>Mobile & Desktop Backend Access</p>
             </div>
           </div>
 

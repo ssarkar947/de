@@ -34,10 +34,10 @@ export const AuthModal = () => {
             <Lock size={26} color="#e5a024" />
           </div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-brand)' }}>
-            Staff Passcode Required
+            Admin Password Required
           </h3>
           <p style={{ fontSize: '0.85rem', opacity: 0.85, marginTop: 4 }}>
-            Enter your restaurant staff PIN to access Kitchen Admin & Partner App.
+            Enter your restaurant admin password to access the backend dashboard & kitchen screen.
           </p>
         </div>
 
@@ -50,24 +50,23 @@ export const AuthModal = () => {
 
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
-              Enter Passcode (Default: 1234)
+              Enter Admin Password
             </label>
             <div style={{ position: 'relative' }}>
               <input
                 type="password"
-                placeholder="••••"
+                placeholder="Enter password..."
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
                 autoFocus
-                maxLength={8}
+                maxLength={32}
                 style={{
                   width: '100%',
                   padding: '12px 14px 12px 42px',
                   borderRadius: 10,
                   border: '1px solid #d1d5db',
-                  fontSize: '1.1rem',
-                  letterSpacing: 4,
-                  fontWeight: 700,
+                  fontSize: '1rem',
+                  fontWeight: 600,
                   outline: 'none'
                 }}
               />

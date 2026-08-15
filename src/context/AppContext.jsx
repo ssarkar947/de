@@ -23,7 +23,7 @@ export const AppProvider = ({ children }) => {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
     return sessionStorage.getItem('de_admin_auth') === 'true';
   });
-  const [adminPasscode, setAdminPasscode] = useState('1234');
+  const [adminPasscode, setAdminPasscode] = useState('desieats2026');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
@@ -304,7 +304,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const verifyPasscode = (inputCode) => {
-    if (inputCode === adminPasscode || inputCode === '1234') {
+    if (inputCode && inputCode.trim() === adminPasscode) {
       setIsAdminAuthenticated(true);
       sessionStorage.setItem('de_admin_auth', 'true');
       setIsAuthModalOpen(false);
@@ -312,10 +312,10 @@ export const AppProvider = ({ children }) => {
         setActiveTab(pendingTargetView);
         setPendingTargetView(null);
       }
-      showToast('🔓 Staff Passcode Verified! Welcome to Kitchen Management.');
+      showToast('🔓 Admin Verified! Welcome to Backend Dashboard.');
       return true;
     } else {
-      showToast('❌ Invalid Passcode. Access Denied!');
+      showToast('❌ Invalid Password. Access Denied!');
       return false;
     }
   };
