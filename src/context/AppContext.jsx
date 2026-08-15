@@ -27,8 +27,15 @@ export const AppProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
+  const MENU_SCHEMA_VERSION = 'v2_combos_199';
+
   // Categories Management
   const [categories, setCategories] = useState(() => {
+    const savedVersion = localStorage.getItem('de_menu_version');
+    if (savedVersion !== MENU_SCHEMA_VERSION) {
+      localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
+      return INITIAL_CATEGORIES;
+    }
     const saved = localStorage.getItem('de_categories');
     return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
   });
@@ -47,6 +54,12 @@ export const AppProvider = ({ children }) => {
 
   // Menu Management
   const [menuItems, setMenuItems] = useState(() => {
+    const savedVersion = localStorage.getItem('de_menu_version');
+    if (savedVersion !== MENU_SCHEMA_VERSION) {
+      localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
+      localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
+      return INITIAL_MENU;
+    }
     const saved = localStorage.getItem('de_menu');
     return saved ? JSON.parse(saved) : INITIAL_MENU;
   });
@@ -529,6 +542,17 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const resetMenuToDefault = () => {
+    setMenuItems(INITIAL_MENU);
+    setCategories(INITIAL_CATEGORIES);
+    localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
+    localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
+    localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
+    broadcastSync('UPDATE_MENU', INITIAL_MENU);
+    broadcastSync('UPDATE_CATEGORIES', INITIAL_CATEGORIES);
+    showToast('Menu refreshed to all 36 combos at ₹199 flat price!');
+  };
+
   // Coupon CRUD
   const saveCoupon = (couponData) => {
     const formatted = { ...couponData, code: couponData.code.toUpperCase() };
@@ -618,6 +642,7 @@ export const AppProvider = ({ children }) => {
       saveMenuItem,
       deleteMenuItem,
       toggleItemStock,
+      resetMenuToDefault,
       coupons,
       saveCoupon,
       toggleCouponStatus,

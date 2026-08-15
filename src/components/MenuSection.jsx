@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { INITIAL_CATEGORIES } from '../data/initialMenu';
 import { FoodCard } from './FoodCard';
 import { HeroOrderSelector } from './HeroOrderSelector';
-import { Search, Sparkles, Utensils, Flame, Sandwich, Soup, Wheat, Coffee } from 'lucide-react';
+import { Search, Sparkles, Utensils, Flame, Sandwich, Soup, Wheat, Coffee, Heart, Leaf } from 'lucide-react';
 
 const categoryIconMap = {
-  Utensils, Sparkles, Flame, Sandwich, Soup, Wheat, Coffee
+  Utensils, Sparkles, Flame, Sandwich, Soup, Wheat, Coffee, Heart, Leaf
 };
 
 export const MenuSection = () => {
-  const { menuItems, activeOrderId, setIsOrderTrackerOpen, orders } = useApp();
+  const { menuItems, categories, activeOrderId, setIsOrderTrackerOpen, orders } = useApp();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
@@ -18,8 +17,7 @@ export const MenuSection = () => {
   const activeOrder = orders.find(o => o.id === activeOrderId && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
 
   const filteredItems = menuItems.filter(item => {
-    const matchesCategory = activeCategory === 'all' || 
-      (activeCategory === 'specials' ? item.isSpecial : item.category === activeCategory);
+    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesVeg = !vegOnly || item.isVeg;
@@ -65,7 +63,7 @@ export const MenuSection = () => {
       <div className="category-nav">
         <div className="category-nav-inner">
           <div className="category-pills">
-            {INITIAL_CATEGORIES.map(cat => {
+            {categories.map(cat => {
               const IconComp = categoryIconMap[cat.icon] || Utensils;
               const isActive = activeCategory === cat.id;
               return (
@@ -87,7 +85,7 @@ export const MenuSection = () => {
               <Search size={16} />
               <input
                 type="text"
-                placeholder="Search biryani, rolls..."
+                placeholder="Search combos, pulao, naan, paneer..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -110,14 +108,12 @@ export const MenuSection = () => {
       {/* Menu Grid Container */}
       <div className="menu-container">
         <h2 className="section-title">
-          {activeCategory === 'all' && 'Our Full Menu'}
-          {activeCategory === 'specials' && '🔥 Desi Chef Specials'}
-          {activeCategory === 'biryani' && '🍚 Signature Biryanis & Rice'}
-          {activeCategory === 'starters' && '🌯 Crispy Starters & Rolls'}
-          {activeCategory === 'mains' && '🍲 Rich Curries & Gravies'}
-          {activeCategory === 'breads' && '🫓 Tandoori Breads & Naans'}
-          {activeCategory === 'desserts' && 'Gulab Jamun & Beverages'}
-          <span style={{ fontSize: '1rem', color: '#9ca3af', fontWeight: '400' }}>({filteredItems.length} items)</span>
+          {activeCategory === 'all' && '🔥 All Combos & Platters (₹199 Flat)'}
+          {activeCategory === 'non-veg-combos' && '🍗 Non-Veg Combos (₹199 Flat)'}
+          {activeCategory === 'veg-combos' && '🧀 Veg Combos (₹199 Flat)'}
+          {activeCategory === 'healthy-combos' && '🥗 Healthy Combos (₹199 Flat)'}
+          {!['all', 'non-veg-combos', 'veg-combos', 'healthy-combos'].includes(activeCategory) && `${categories.find(c => c.id === activeCategory)?.name || 'Menu Items'} (₹199 Flat)`}
+          <span style={{ fontSize: '1rem', color: '#9ca3af', fontWeight: '400', marginLeft: 8 }}>({filteredItems.length} items)</span>
         </h2>
 
         {filteredItems.length > 0 ? (

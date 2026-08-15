@@ -29,6 +29,7 @@ export const AdminDashboard = () => {
     menuItems,
     deleteMenuItem,
     toggleItemStock,
+    resetMenuToDefault,
     isAudioMuted,
     setIsAudioMuted,
     isRinging,
@@ -412,24 +413,46 @@ export const AdminDashboard = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => { setEditingItem(null); setIsMenuModalOpen(true); }}
-              style={{
-                background: '#164324',
-                color: 'white',
-                border: 'none',
-                padding: '10px 18px',
-                borderRadius: 8,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontFamily: 'var(--font-brand)'
-              }}
-            >
-              <Plus size={18} /> Add New Dish
-            </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => {
+                  if (window.confirm('Reset all menu items to the standard 36 combos @ ₹199 flat price?')) {
+                    resetMenuToDefault();
+                  }
+                }}
+                style={{
+                  background: '#fef3c7',
+                  color: '#b45309',
+                  border: '1px solid #fde68a',
+                  padding: '10px 16px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+              >
+                🔄 Reset to 36 Combos (₹199 Flat)
+              </button>
+
+              <button
+                onClick={() => { setEditingItem(null); setIsMenuModalOpen(true); }}
+                style={{
+                  background: '#164324',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 18px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontFamily: 'var(--font-brand)'
+                }}
+              >
+                <Plus size={18} /> Add New Dish
+              </button>
+            </div>
           </div>
 
           <div style={{ overflowX: 'auto' }}>

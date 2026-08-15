@@ -16,11 +16,11 @@ const FOOD_IMAGE_PRESETS = [
 ];
 
 export const MenuEditorModal = ({ itemToEdit, onClose }) => {
-  const { saveMenuItem } = useApp();
+  const { saveMenuItem, categories } = useApp();
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('biryani');
-  const [price, setPrice] = useState(250);
+  const [category, setCategory] = useState('non-veg-combos');
+  const [price, setPrice] = useState(199);
   const [isVeg, setIsVeg] = useState(false);
   const [isSpecial, setIsSpecial] = useState(false);
   const [prepTime, setPrepTime] = useState('15 mins');
@@ -30,7 +30,7 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
   // Portion Variations (e.g. Half / Full)
   const [variations, setVariations] = useState([]);
   const [varNameInput, setVarNameInput] = useState('');
-  const [varPriceInput, setVarPriceInput] = useState(150);
+  const [varPriceInput, setVarPriceInput] = useState(199);
 
   // Add-on Options
   const [options, setOptions] = useState([]);
@@ -40,8 +40,8 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
   useEffect(() => {
     if (itemToEdit) {
       setName(itemToEdit.name || '');
-      setCategory(itemToEdit.category || 'biryani');
-      setPrice(itemToEdit.price || 250);
+      setCategory(itemToEdit.category || 'non-veg-combos');
+      setPrice(itemToEdit.price || 199);
       setIsVeg(itemToEdit.isVeg ?? false);
       setIsSpecial(itemToEdit.isSpecial ?? false);
       setPrepTime(itemToEdit.prepTime || '15 mins');
@@ -51,8 +51,8 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       setOptions(itemToEdit.options || []);
     } else {
       setName('');
-      setCategory('biryani');
-      setPrice(250);
+      setCategory('non-veg-combos');
+      setPrice(199);
       setIsVeg(false);
       setIsSpecial(false);
       setPrepTime('15 mins');
@@ -140,11 +140,9 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
                 onChange={e => setCategory(e.target.value)}
                 style={{ width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #d1d5db', fontWeight: 700 }}
               >
-                <option value="biryani">Biryani & Rice</option>
-                <option value="starters">Starters & Rolls</option>
-                <option value="mains">Curries & Gravies</option>
-                <option value="breads">Tandoor & Breads</option>
-                <option value="desserts">Sweets & Drinks</option>
+                {categories.filter(c => c.id !== 'all').map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </select>
             </div>
           </div>
