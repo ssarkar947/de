@@ -26,6 +26,8 @@ export const AdminDashboard = () => {
   const {
     orders,
     updateOrderStatus,
+    deleteOrder,
+    clearAllOrders,
     menuItems,
     deleteMenuItem,
     toggleItemStock,
@@ -223,11 +225,41 @@ export const AdminDashboard = () => {
       {/* TAB 1: LIVE ORDERS */}
       {activeAdminTab === 'orders' && (
         <div>
+          {orders.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, background: '#ffffff', padding: '12px 18px', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+              <span style={{ fontSize: '0.88rem', color: '#475569', fontWeight: 600 }}>
+                Total Orders in Queue: <strong>{orders.length}</strong> (Active: <strong>{orders.filter(o => o.status !== 'COMPLETED').length}</strong>)
+              </span>
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete and clear ALL test orders from the database to go live?')) {
+                    clearAllOrders();
+                  }
+                }}
+                style={{
+                  background: '#fef2f2',
+                  color: '#b91c1c',
+                  border: '1px solid #fecaca',
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <Trash2 size={14} /> Clear All Test / Demo Orders
+              </button>
+            </div>
+          )}
+
           {orders.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: 16, border: '1px solid #e5e7eb' }}>
               <ChefHat size={48} color="#9ca3af" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '1.2rem', color: '#374151' }}>No Incoming Orders Yet</h3>
-              <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>When a customer places an order, it will appear here in real time with audio chime alerts.</p>
+              <h3 style={{ fontSize: '1.2rem', color: '#374151' }}>No Incoming Orders Yet (Fresh Slate)</h3>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>The system is live and ready for public orders. When a customer orders, it will appear here in real time with audio chime alerts.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
@@ -251,12 +283,26 @@ export const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <button
-                        onClick={() => handlePrintKOT(order)}
-                        style={{ background: '#f1f5f9', border: 'none', padding: '6px 12px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
-                      >
-                        <Printer size={14} /> Print KOT
-                      </button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => handlePrintKOT(order)}
+                          style={{ background: '#f1f5f9', border: 'none', padding: '6px 10px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
+                          title="Print Kitchen Ticket"
+                        >
+                          <Printer size={14} /> Print
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete order #${order.id}?`)) {
+                              deleteOrder(order.id);
+                            }
+                          }}
+                          style={{ background: '#fee2e2', border: 'none', padding: '6px 8px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}
+                          title="Delete Order"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, marginBottom: 12, fontSize: '0.875rem' }}>

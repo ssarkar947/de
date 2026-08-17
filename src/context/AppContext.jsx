@@ -495,6 +495,30 @@ export const AppProvider = ({ children }) => {
     showToast(`Order #${orderId.slice(-4)} status updated to ${newStatus}`);
   };
 
+  // Delete / Clear Orders (Clean up demo or completed orders)
+  const deleteOrder = (orderId) => {
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+    if (activeOrderId === orderId) {
+      setActiveOrderId(null);
+    }
+    deleteFirestoreDoc('orders', orderId);
+    broadcastSync('DELETE_ORDER', orderId);
+    showToast(`Deleted order #${orderId.slice(-4)}`);
+  };
+
+  const clearAllOrders = () => {
+    orders.forEach(o => {
+      deleteFirestoreDoc('orders', o.id);
+    });
+    setOrders([]);
+    setActiveOrderId(null);
+    localStorage.removeItem('de_orders');
+    localStorage.removeItem('de_active_order_id');
+    stopRingerLoop();
+    broadcastSync('CLEAR_ALL_ORDERS', null);
+    showToast('🧹 All orders cleared from database!');
+  };
+
   // Menu Items Management (Syncs to Firestore Database)
   const saveMenuItem = (itemData) => {
     let targetItem = itemData;
@@ -674,6 +698,8 @@ export const AppProvider = ({ children }) => {
       playRingerBeep,
       placeOrder,
       updateOrderStatus,
+      deleteOrder,
+      clearAllOrders,
       addPincode,
       togglePincodeActive,
       removePincode,
