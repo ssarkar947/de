@@ -462,185 +462,1073 @@ body {
   color: #047857;
 }
 
-/* Menu Section */
-.menu-container {
-  max-width: 1280px;
+/* =========================================================
+   SWIGGY RESTAURANT ORDERING EXPERIENCE & NO-IMAGE PRODUCT LISTING
+   ========================================================= */
+
+.swiggy-page-layout {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding-bottom: 90px;
+}
+
+/* Active Order Bar */
+.swiggy-active-order-bar {
+  background: #164324;
+  color: white;
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(229, 160, 36, 0.3);
+}
+
+.swiggy-active-order-inner {
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.live-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+  animation: pulseGreen 1.6s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.active-order-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.swiggy-track-live-btn {
+  background: #e5a024;
+  color: #164324;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+/* 1. SWIGGY RESTAURANT SHOWCASE HEADER */
+.swiggy-restaurant-header {
+  max-width: 1000px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+
+.swiggy-outlet-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px 28px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.swiggy-outlet-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.outlet-name-wrap {
   flex: 1;
 }
 
-.section-title {
+.outlet-brand-badge {
+  display: inline-block;
+  background: rgba(22, 67, 36, 0.08);
+  color: #164324;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.swiggy-outlet-name {
   font-family: var(--font-brand);
   font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.swiggy-outlet-cuisines {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Rating Card Box */
+.swiggy-outlet-rating-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.outlet-rating-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #15803d;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.outlet-rating-total {
+  font-size: 0.72rem;
   font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--primary-green);
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.swiggy-outlet-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 18px 0;
+}
+
+.swiggy-outlet-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.meta-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.outlet-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-sep {
+  color: #cbd5e1;
+}
+
+.swiggy-mode-switch-inline {
+  display: flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.mode-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-tab.active-mode {
+  background: #164324;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(22, 67, 36, 0.2);
+}
+
+.swiggy-pincode-strip {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: #475569;
+}
+
+.swiggy-change-pin-btn {
+  background: none;
+  border: none;
+  color: #d85d27;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 2. SWIGGY OFFERS STRIP */
+.swiggy-offers-strip {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.swiggy-offer-card {
+  flex: 1;
+  min-width: 260px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.offer-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #fefce8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.offer-code-tag {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #164324;
+  letter-spacing: 0.5px;
+}
+
+.offer-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* 3. SWIGGY STICKY NAVIGATION & FILTER BAR */
+.swiggy-filter-sticky-bar {
+  position: sticky;
+  top: 76px;
+  z-index: 90;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
+  margin-top: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.swiggy-filter-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 14px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.swiggy-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.swiggy-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.swiggy-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.swiggy-search-input:focus {
+  background: #ffffff;
+  border-color: #164324;
+  box-shadow: 0 0 0 3px rgba(22, 67, 36, 0.1);
+}
+
+.swiggy-search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #e2e8f0;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.swiggy-diet-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swiggy-diet-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.swiggy-diet-btn:hover {
+  border-color: #94a3b8;
+}
+
+.swiggy-diet-btn.active-veg {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.swiggy-diet-btn.active-nonveg {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+.swiggy-diet-btn.active-special {
+  background: #fefce8;
+  border-color: #f59e0b;
+  color: #b45309;
+}
+
+/* Category Tabs Scroll */
+.swiggy-category-tabs-scroll {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px 8px;
+  overflow-x: auto;
+}
+
+.swiggy-category-tabs-inner {
+  display: flex;
+  gap: 8px;
+}
+
+.swiggy-category-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.swiggy-category-tab:hover {
+  color: #1f2937;
+  background: #f1f5f9;
+}
+
+.swiggy-category-tab.active {
+  background: #164324;
+  color: #ffffff;
+}
+
+/* 4. SWIGGY MENU CONTAINER & CATEGORY ACCORDIONS */
+.swiggy-menu-container {
+  max-width: 1000px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+}
+
+.swiggy-category-section {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.swiggy-section-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  background: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.swiggy-section-header:hover {
+  background: #fafafa;
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swiggy-section-title {
+  font-family: var(--font-brand);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.swiggy-section-count {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.swiggy-collapse-arrow {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiggy-dishes-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   5. SWIGGY DISH ITEM ROW (IMAGE-FREE, DESCRIPTION FOCUS)
+   ========================================================= */
+
+.swiggy-dish-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-top: 1px solid #f1f5f9;
+  gap: 24px;
+  transition: background 0.2s ease;
+}
+
+.swiggy-dish-item:hover {
+  background: #fdfdfd;
+}
+
+.swiggy-dish-item.out-of-stock {
+  opacity: 0.6;
+}
+
+/* Dish Info Left Column */
+.dish-info-col {
+  flex: 1;
+  max-width: 720px;
+}
+
+.dish-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/* Swiggy Authentic Veg/Non-Veg Symbols */
+.swiggy-veg-symbol {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.swiggy-veg-symbol.veg {
+  border: 2px solid #15803d;
+  background: #ffffff;
+}
+
+.swiggy-veg-symbol.veg .veg-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #15803d;
+}
+
+.swiggy-veg-symbol.nonveg {
+  border: 2px solid #b91c1c;
+  background: #ffffff;
+}
+
+.swiggy-veg-symbol.nonveg .veg-indicator-dot {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid #b91c1c;
+}
+
+.swiggy-veg-symbol.mini {
+  width: 13px;
+  height: 13px;
+}
+
+.swiggy-veg-symbol.mini .veg-indicator-dot {
+  width: 5px;
+  height: 5px;
+}
+
+/* Bestseller Badge */
+.swiggy-bestseller-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fefce8;
+  color: #b45309;
+  border: 1px solid #fef08a;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.swiggy-dish-name {
+  font-family: var(--font-main);
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.swiggy-dish-price {
+  font-family: var(--font-main);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.swiggy-dish-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.swiggy-rating-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #15803d;
+  font-weight: 700;
+}
+
+.swiggy-rating-count {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.rating-dot-separator {
+  color: #cbd5e1;
+}
+
+.swiggy-time-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Rich Dish Description - Central Focus */
+.swiggy-dish-desc {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  letter-spacing: -0.1px;
+}
+
+.swiggy-custom-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d85d27;
+  background: #fff7ed;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Right Column Action (Swiggy ADD button) */
+.dish-action-col {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.swiggy-btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.swiggy-add-btn {
+  width: 100%;
+  background: #ffffff;
+  color: #164324;
+  border: 1.5px solid #164324;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.swiggy-add-btn:hover {
+  background: #164324;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 67, 36, 0.2);
+}
+
+.add-plus-icon {
+  color: #e5a024;
+}
+
+.swiggy-add-btn:hover .add-plus-icon {
+  color: #ffffff;
+}
+
+.swiggy-stepper-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #164324;
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 2px 8px rgba(22, 67, 36, 0.25);
+}
+
+.stepper-sub-btn, .stepper-add-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.stepper-count {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.swiggy-custom-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.swiggy-sold-out-badge {
+  background: #f1f5f9;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* 6. SWIGGY CUSTOMIZATION MODAL */
+.swiggy-customize-modal {
+  max-width: 500px;
+  border-radius: 20px;
+}
+
+.swiggy-radio-row, .swiggy-checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.swiggy-radio-row.selected {
+  border-color: #164324;
+  background: #f0fdf4;
+}
+
+.swiggy-checkbox-row.selected {
+  border-color: #e5a024;
+  background: #fefce8;
+}
+
+.swiggy-radio-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiggy-radio-dot.active {
+  border-color: #164324;
+}
+
+.dot-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #164324;
+}
+
+.swiggy-check-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiggy-check-box.active {
+  background: #e5a024;
+  border-color: #e5a024;
+}
+
+.swiggy-customize-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.swiggy-qty-controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-/* Food Card */
-.food-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-.food-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: rgba(229, 160, 36, 0.4);
+.qty-val {
+  font-weight: 800;
+  font-size: 1rem;
 }
 
-.card-img-wrap {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-  background: #f1f5f9;
-}
-.food-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-.food-card:hover .food-img {
-  transform: scale(1.05);
+.swiggy-confirm-add-btn {
+  flex: 1;
+  background: #164324;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.food-badge-tag {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 700;
+.swiggy-confirm-add-btn:hover {
+  background: #0f3019;
+}
+
+/* 7. FLOATING BROWSE MENU FAB & POPUP */
+.swiggy-floating-menu-btn-wrap {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+}
+
+.swiggy-browse-menu-fab {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.8px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.badge-special {
-  background: var(--accent-gold);
-  color: white;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
 }
 
-.veg-nonveg-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  background: white;
-  border: 2px solid #10b981;
+.swiggy-browse-menu-fab:hover {
+  transform: translateY(-2px);
+  background: #1e293b;
+}
+
+.swiggy-menu-sheet {
+  max-width: 420px;
+  border-radius: 20px;
+}
+
+.browse-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.browse-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.92rem;
+  color: #1e293b;
+}
+
+.browse-menu-item:hover, .browse-menu-item.active {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #164324;
+}
+
+.browse-count {
+  font-weight: 700;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* 8. FLOATING BOTTOM CART STRIP (SWIGGY STYLE) */
+.swiggy-bottom-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 20px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.swiggy-cart-bar-inner {
+  pointer-events: auto;
+  max-width: 960px;
+  margin: 0 auto;
+  background: #164324;
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(22, 67, 36, 0.4);
+  border: 1px solid rgba(229, 160, 36, 0.3);
+  animation: slideUpCart 0.25s ease;
+}
+
+@keyframes slideUpCart {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cart-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-bar-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.cart-bar-divider {
+  opacity: 0.4;
+}
+
+.cart-bar-total {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.cart-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* 9. STAFF & BACKEND FOOTER SECTION */
+.swiggy-staff-access-footer {
+  max-width: 1000px;
+  margin: 40px auto 20px;
+  padding: 0 20px;
+}
+
+.staff-access-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.staff-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(22, 67, 36, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.veg-nonveg-badge.nonveg {
-  border-color: #ef4444;
-}
-.veg-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-}
-.veg-nonveg-badge.nonveg .veg-dot {
-  background: #ef4444;
-}
 
-.card-content {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-.food-title {
-  font-family: var(--font-brand);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-.food-price {
-  font-family: var(--font-brand);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--primary-green);
-  white-space: nowrap;
-}
-
-.food-desc {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-footer {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-.prep-info {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.add-btn {
-  background: var(--primary-green);
-  color: white;
+.staff-btn {
   border: none;
   padding: 8px 16px;
-  border-radius: var(--radius-full);
-  font-family: var(--font-brand);
+  border-radius: 8px;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.84rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
 }
-.add-btn:hover {
-  background: var(--primary-green-dark);
+
+.staff-btn.admin-btn {
+  background: #164324;
+  color: #ffffff;
 }
-.out-of-stock-btn {
-  background: #e2e8f0;
-  color: #94a3b8;
-  cursor: not-allowed;
+
+.staff-btn.kitchen-btn {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.swiggy-no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.swiggy-reset-filter-btn {
+  margin-top: 14px;
+  background: #164324;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 /* Modals Overlay */

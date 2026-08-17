@@ -1,19 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, Plus, Trash2, Save, Sparkles, Utensils, Image as ImageIcon, Check } from 'lucide-react';
-
-const FOOD_IMAGE_PRESETS = [
-  { name: 'Biryani', url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Chicken Biryani', url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Butter Chicken', url: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Mutton Kosha', url: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Chicken Roll', url: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Tandoori Chicken', url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Paneer Butter', url: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Garlic Naan', url: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Gulab Jamun', url: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Kulhad Chai', url: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80' }
-];
+import { X, Plus, Trash2, Save, Sparkles, Utensils } from 'lucide-react';
 
 export const MenuEditorModal = ({ itemToEdit, onClose }) => {
   const { saveMenuItem, categories } = useApp();
@@ -25,7 +12,6 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
   const [isSpecial, setIsSpecial] = useState(false);
   const [prepTime, setPrepTime] = useState('15 mins');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
 
   // Portion Variations (e.g. Half / Full)
   const [variations, setVariations] = useState([]);
@@ -46,7 +32,6 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       setIsSpecial(itemToEdit.isSpecial ?? false);
       setPrepTime(itemToEdit.prepTime || '15 mins');
       setDescription(itemToEdit.description || '');
-      setImage(itemToEdit.image || '');
       setVariations(itemToEdit.variations || []);
       setOptions(itemToEdit.options || []);
     } else {
@@ -57,7 +42,6 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       setIsSpecial(false);
       setPrepTime('15 mins');
       setDescription('');
-      setImage(FOOD_IMAGE_PRESETS[0].url);
       setVariations([]);
       setOptions([]);
     }
@@ -98,7 +82,6 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       isSpecial,
       prepTime,
       description,
-      image: image || FOOD_IMAGE_PRESETS[0].url,
       inStock: itemToEdit ? itemToEdit.inStock : true,
       variations,
       options
@@ -183,63 +166,17 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
             </div>
           </div>
 
-          {/* Image Editor & Presets Section */}
-          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#164324', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <ImageIcon size={16} />
-                Dish Image (URL or Presets)
-              </label>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-              <input
-                type="text"
-                value={image}
-                onChange={e => setImage(e.target.value)}
-                placeholder="Enter image URL..."
-                style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: '0.85rem' }}
-              />
-              {image && (
-                <img src={image} alt="Preview" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '1px solid #cbd5e1' }} />
-              )}
-            </div>
-
-            {/* Quick Photo Presets */}
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 6 }}>
-              Quick Select Photo Preset:
-            </span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {FOOD_IMAGE_PRESETS.map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setImage(p.url)}
-                  style={{
-                    background: image === p.url ? '#164324' : 'white',
-                    color: image === p.url ? 'white' : '#334155',
-                    border: '1px solid #cbd5e1',
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#374151', display: 'block', marginBottom: 4 }}>Description</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#374151', display: 'block', marginBottom: 4 }}>
+              Dish Description (Item details, ingredients, spices & aroma) *
+            </label>
             <textarea
-              rows={2}
+              rows={3}
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Short appetizing description..."
-              style={{ width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: '0.85rem', resize: 'none' }}
+              placeholder="Describe the dish ingredients, preparation style, and accompaniments..."
+              style={{ width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: '0.88rem', resize: 'none' }}
+              required
             />
           </div>
 

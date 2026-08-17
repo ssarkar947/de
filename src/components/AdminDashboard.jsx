@@ -469,11 +469,44 @@ export const AdminDashboard = () => {
               <tbody>
                 {menuItems.map((item) => (
                   <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <img src={item.image} alt={item.name} style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
+                    <td style={{ padding: 12, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 4,
+                          border: item.isVeg ? '2px solid #15803d' : '2px solid #b91c1c',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginTop: 3,
+                          flexShrink: 0
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: item.isVeg ? 8 : 0,
+                            height: item.isVeg ? 8 : 0,
+                            borderRadius: item.isVeg ? '50%' : 0,
+                            backgroundColor: item.isVeg ? '#15803d' : 'transparent',
+                            borderLeft: !item.isVeg ? '4px solid transparent' : 'none',
+                            borderRight: !item.isVeg ? '4px solid transparent' : 'none',
+                            borderBottom: !item.isVeg ? '7px solid #b91c1c' : 'none'
+                          }}
+                        />
+                      </div>
                       <div>
-                        <strong style={{ color: '#1f2937' }}>{item.name}</strong>
-                        <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{item.isVeg ? '🟢 Veg' : '🔴 Non-Veg'}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <strong style={{ color: '#1f2937', fontSize: '0.95rem' }}>{item.name}</strong>
+                          {item.isSpecial && (
+                            <span style={{ background: '#fef3c7', color: '#b45309', fontSize: '0.7rem', padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>
+                              ★ Special
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: '#6b7280', margin: '3px 0 0', maxWidth: 380, lineHeight: 1.35 }}>
+                          {item.description}
+                        </p>
                       </div>
                     </td>
 
