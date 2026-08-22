@@ -17,7 +17,10 @@ import {
   User,
   ShoppingBag,
   ArrowLeft,
-  Check
+  Check,
+  Lock,
+  UserPlus,
+  Phone
 } from 'lucide-react';
 
 export const CampaignLanding = () => {
@@ -26,14 +29,23 @@ export const CampaignLanding = () => {
     loyaltyStampsCount = 0,
     unlockedFreeDishes = 0,
     userProfile,
-    menuItems = [],
+    loginCustomer,
+    qualifyingOrders = [],
+    customerOrders = [],
+    selectedPincode = '700135',
     addToCart,
     setIsCartOpen,
     applyFreeDishReward
   } = useApp();
 
-  const [simulatedStamps, setSimulatedStamps] = useState(loyaltyStampsCount || 0);
   const [openFaq, setOpenFaq] = useState(null);
+
+  // Inline Profile Creation Form for Guests
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileAddress, setProfileAddress] = useState('');
+  const [formError, setFormError] = useState('');
+  const [isSuccessCreated, setIsSuccessCreated] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,9 +55,31 @@ export const CampaignLanding = () => {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
+  const handleCreateProfileSubmit = (e) => {
+    e.preventDefault();
+    if (!profileName.trim() || !profilePhone.trim()) {
+      setFormError('Please enter your full name and 10-digit phone number.');
+      return;
+    }
+    if (profilePhone.replace(/\D/g, '').length < 10) {
+      setFormError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    loginCustomer({
+      name: profileName.trim(),
+      phone: profilePhone.replace(/\D/g, ''),
+      address: profileAddress.trim(),
+      pincode: selectedPincode || '700135'
+    });
+
+    setIsSuccessCreated(true);
+    setFormError('');
+  };
+
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(
-      `🍛 *Desi Eats Rajarhat Loyalty Offer!*\n\nOrder 5 times (₹200+ each) and get *1 FREE Dish below ₹200* on your next order! Authentic Bengali Kosha Chicken, Basanti Pulao, Tandoori Naan & pure veg delicacies.\n\nCheck out the menu & claim your stamps here:\nhttps://desieats.online/#campaign`
+      `🍛 *Desi Eats Rajarhat Loyalty Offer!*\n\nOrder 5 times (₹200+ each) and get *1 FREE Dish below ₹200* on your next order! Authentic Bengali Kosha Chicken, Basanti Pulao, Tandoori Naan & pure veg delicacies.\n\nCreate your profile & claim your stamps here:\nhttps://desieats.online/#campaign`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -97,12 +131,12 @@ export const CampaignLanding = () => {
 
   const faqs = [
     {
-      q: 'What counts as a qualifying order for the campaign?',
-      a: 'Any order placed on desieats.online (for Home Delivery or Spot Takeaway in Rajarhat) with a bill amount of ₹200 or more automatically earns you 1 Loyalty Stamp.'
+      q: 'Do I need to create a profile before starting?',
+      a: 'Yes! Creating your Desi Eats profile (with your 10-digit mobile number) links your orders and stamps securely so they are never lost.'
     },
     {
-      q: 'How do I collect and track my stamps?',
-      a: 'You do not need physical cards! Whenever you order, just provide your 10-digit phone number. Your digital stamp card automatically updates with each qualifying order.'
+      q: 'What counts as a qualifying order?',
+      a: 'Any order placed on desieats.online (for Home Delivery or Spot Takeaway in Rajarhat) with a bill amount of ₹200 or more automatically earns you 1 Loyalty Stamp on your profile.'
     },
     {
       q: 'Which free dishes can I choose when I complete 5 stamps?',
@@ -110,13 +144,15 @@ export const CampaignLanding = () => {
     },
     {
       q: 'Do my stamps expire?',
-      a: 'No! Your stamps stay safely saved with your phone number on your profile for the entire duration of the campaign.'
+      a: 'No! Your stamps stay safely saved with your profile phone number for the entire duration of the campaign.'
     },
     {
       q: 'Can I earn multiple free dishes?',
       a: 'Yes! Every 5 qualifying orders earns you another free dish. (5 orders = 1 free dish, 10 orders = 2 free dishes, and so on).'
     }
   ];
+
+  const neededForNextReward = 5 - loyaltyStampsCount;
 
   return (
     <div className="campaign-page-wrapper">
@@ -130,7 +166,7 @@ export const CampaignLanding = () => {
 
           <button onClick={() => setActiveTab('profile')} className="campaign-profile-link-btn">
             <User size={15} />
-            <span>My Profile ({loyaltyStampsCount}/5 Stamps)</span>
+            <span>{userProfile ? `${userProfile.name.split(' ')[0]} (${loyaltyStampsCount}/5 Stamps)` : 'Create Profile'}</span>
           </button>
         </div>
       </div>
@@ -140,7 +176,7 @@ export const CampaignLanding = () => {
         <div className="campaign-hero-inner">
           <div className="campaign-badge-pill">
             <Sparkles size={14} color="#e5a024" />
-            <span>EXCLUSIVE RAJARHAT LOYALTY CAMPAIGN</span>
+            <span>LIVE RAJARHAT LOYALTY CAMPAIGN</span>
           </div>
 
           <h1 className="campaign-title">
@@ -149,58 +185,78 @@ export const CampaignLanding = () => {
           </h1>
 
           <p className="campaign-subtitle">
-            Order your favourite authentic Bengali & North Indian meals. Every order of <strong>₹200 or more</strong> earns you a stamp. Complete <strong>5 stamps</strong>, and your next mouth-watering dish (below ₹200) is <strong>100% on the house!</strong>
+            Order your favourite authentic Bengali & North Indian meals. Create your profile, place orders of <strong>₹200 or more</strong>, and every <strong>5 orders unlocks 1 FREE dish below ₹200</strong> on the house!
           </p>
 
-          <div className="campaign-cta-group">
-            <button
-              onClick={() => setActiveTab('customer')}
-              className="campaign-primary-btn"
-            >
-              <span>Browse Menu & Start Earning</span>
-              <ArrowRight size={18} />
-            </button>
+          {/* Live Status Header Card */}
+          {userProfile ? (
+            <div className="live-user-status-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, color: '#e5a024', letterSpacing: 1 }}>
+                    ACTIVE MEMBER: {userProfile.name.toUpperCase()} ({userProfile.phone})
+                  </span>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'white', marginTop: 2 }}>
+                    {unlockedFreeDishes > 0
+                      ? `🎉 You have ${unlockedFreeDishes} FREE Dish ready to claim!`
+                      : `${loyaltyStampsCount}/5 Stamps collected • ${neededForNextReward} more order(s) for a Free Dish`}
+                  </div>
+                </div>
 
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="campaign-secondary-btn"
-            >
-              <User size={18} />
-              <span>Check My Stamps & Profile</span>
-            </button>
-          </div>
-
-          {/* User Current Live Stamp Status Snippet */}
-          <div className="live-user-status-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-              <div>
-                <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, color: '#e5a024', letterSpacing: 1 }}>
-                  YOUR CURRENT STATUS ({userProfile?.name ? userProfile.name : 'Guest'})
-                </span>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'white', marginTop: 2 }}>
-                  {unlockedFreeDishes > 0
-                    ? `🎉 You have ${unlockedFreeDishes} FREE Dish ready to claim!`
-                    : `${loyaltyStampsCount}/5 Stamps collected • ${5 - loyaltyStampsCount} more order(s) for a Free Dish`}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => setActiveTab('customer')}
+                    style={{
+                      background: '#e5a024',
+                      color: '#164324',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Order Now & Earn Stamp →
+                  </button>
                 </div>
               </div>
-
-              <button
-                onClick={() => setActiveTab('profile')}
-                style={{
-                  background: '#e5a024',
-                  color: '#164324',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: 8,
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer'
-                }}
-              >
-                View Stamp Card →
-              </button>
             </div>
-          </div>
+          ) : (
+            <div className="live-user-status-card" style={{ background: 'rgba(230, 160, 36, 0.15)', borderColor: '#e5a024' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e5a024', color: '#164324', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <UserPlus size={18} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, color: '#fde68a', letterSpacing: 1 }}>
+                      STEP 1: CREATE YOUR PROFILE TO PARTICIPATE
+                    </span>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>
+                      Create your free profile below to start collecting stamps on every ₹200+ order!
+                    </div>
+                  </div>
+                </div>
+
+                <a
+                  href="#profile-form-section"
+                  style={{
+                    background: '#e5a024',
+                    color: '#164324',
+                    textDecoration: 'none',
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    display: 'inline-block'
+                  }}
+                >
+                  Create Profile Now ↓
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -208,31 +264,31 @@ export const CampaignLanding = () => {
       <section className="campaign-section" style={{ background: '#ffffff' }}>
         <div className="campaign-container">
           <div className="section-heading-center">
-            <span className="section-subtag">SIMPLE & REWARDING</span>
-            <h2 className="section-main-title">How The 5-for-1 Pass Works</h2>
-            <p className="section-main-desc">No complicated points or hidden rules. Just pure, honest food rewards.</p>
+            <span className="section-subtag">CAMPAIGN RULES</span>
+            <h2 className="section-main-title">How To Get Your Free Dish</h2>
+            <p className="section-main-desc">A transparent, rewarding program designed for our loyal foodies in Rajarhat.</p>
           </div>
 
           <div className="steps-grid">
             <div className="step-card">
               <div className="step-number-badge">1</div>
               <div className="step-icon-wrap" style={{ background: '#fef3c7', color: '#b45309' }}>
-                <ShoppingBag size={28} />
+                <User size={28} />
               </div>
-              <h3 className="step-title">Order ₹200 or More</h3>
+              <h3 className="step-title">Create Profile</h3>
               <p className="step-desc">
-                Pick your favorite Basanti Pulao combos, Kosha Chicken, Tandoori naan, or healthy platters with a minimum bill of ₹200.
+                Register with your mobile number. Your orders & stamps will automatically be tracked on your profile.
               </p>
             </div>
 
             <div className="step-card">
               <div className="step-number-badge">2</div>
               <div className="step-icon-wrap" style={{ background: '#ecfdf5', color: '#047857' }}>
-                <CheckCircle2 size={28} />
+                <ShoppingBag size={28} />
               </div>
-              <h3 className="step-title">Collect 1 Stamp Each Time</h3>
+              <h3 className="step-title">Order ₹200 or More</h3>
               <p className="step-desc">
-                Your phone number automatically records your stamp upon order delivery. No card to lose, no coupon codes to memorize.
+                Order your favorite Basanti Pulao combos, Kosha Chicken, or curries (min ₹200 bill). Each order gives you 1 stamp!
               </p>
             </div>
 
@@ -241,84 +297,191 @@ export const CampaignLanding = () => {
               <div className="step-icon-wrap" style={{ background: '#fef4e2', color: '#d85d27' }}>
                 <Gift size={28} />
               </div>
-              <h3 className="step-title">Enjoy 1 Free Dish Below ₹200!</h3>
+              <h3 className="step-title">1 Free Dish on 5th Order!</h3>
               <p className="step-desc">
-                After completing 5 qualifying orders, pick ANY dish or combo priced below ₹200 on our menu completely 100% FREE!
+                After 5 qualifying orders, pick ANY dish or combo priced below ₹200 on our menu completely 100% FREE!
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. INTERACTIVE 5-STAMP VISUALIZER */}
+      {/* 3. REAL LIVE DIGITAL STAMP CARD */}
       <section className="campaign-section" style={{ background: 'var(--bg-ivory)' }}>
-        <div className="campaign-container">
+        <div className="campaign-container" style={{ maxWidth: 860 }}>
           <div className="stamp-visualizer-box">
-            <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#d85d27', textTransform: 'uppercase', letterSpacing: 1 }}>
-                DIGITAL LOYALTY PASS
-              </span>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#164324', marginTop: 4 }}>
-                Your 5-Stamp Reward Card
-              </h3>
-              <p style={{ fontSize: '0.88rem', color: '#6b7280' }}>
-                Click any slot below to test how the pass unlocks your free dish!
-              </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+              <div>
+                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#d85d27', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  OFFICIAL DIGITAL LOYALTY CARD
+                </span>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#164324', margin: '4px 0 0' }}>
+                  {userProfile ? `${userProfile.name}'s Stamp Pass` : 'Guest Loyalty Pass'}
+                </h3>
+              </div>
+
+              <div style={{ background: '#fef3c7', padding: '6px 14px', borderRadius: 8, border: '1px solid #fde047', fontSize: '0.85rem', fontWeight: 800, color: '#92400e' }}>
+                {userProfile ? `Status: ${loyaltyStampsCount}/5 Stamps` : 'Status: Profile Required'}
+              </div>
             </div>
 
-            {/* Interactive Grid */}
-            <div className="stamps-grid interactive">
-              {[1, 2, 3, 4, 5].map((num) => {
-                const active = num <= simulatedStamps;
-                const isGift = num === 5;
+            {/* Real Stamps Grid */}
+            <div className="stamps-grid">
+              {[1, 2, 3, 4, 5].map((slotNum) => {
+                const isStamped = userProfile && slotNum <= loyaltyStampsCount;
+                const isFinalGift = slotNum === 5;
 
                 return (
                   <div
-                    key={num}
-                    onClick={() => setSimulatedStamps(num === simulatedStamps ? num - 1 : num)}
-                    className={`stamp-slot ${active ? 'stamp-completed' : ''} ${isGift ? 'stamp-gift-slot' : ''}`}
-                    style={{ cursor: 'pointer' }}
-                    title="Click to simulate stamp progress"
+                    key={slotNum}
+                    className={`stamp-slot ${isStamped ? 'stamp-completed' : ''} ${isFinalGift ? 'stamp-gift-slot' : ''}`}
                   >
                     <div className="stamp-icon-wrap">
-                      {active ? (
+                      {isStamped ? (
                         <CheckCircle2 size={24} color="#15803d" />
-                      ) : isGift ? (
-                        <Gift size={24} color="#e5a024" />
+                      ) : isFinalGift ? (
+                        <Gift size={24} color={unlockedFreeDishes > 0 ? '#15803d' : '#e5a024'} />
                       ) : (
-                        <span className="stamp-slot-number">{num}</span>
+                        <span className="stamp-slot-number">{slotNum}</span>
                       )}
                     </div>
                     <div className="stamp-label">
-                      {isGift ? (
-                        <strong style={{ color: active ? '#15803d' : '#d85d27' }}>🎁 FREE DISH</strong>
+                      {isFinalGift ? (
+                        <strong style={{ color: isStamped ? '#15803d' : '#d85d27' }}>🎁 FREE DISH</strong>
                       ) : (
-                        <span>Order #{num}</span>
+                        <span>Order {slotNum} (₹200+)</span>
                       )}
                     </div>
                     <span className="stamp-earned-tag">
-                      {active ? '✓ STAMPED' : 'TAP TO TEST'}
+                      {isStamped ? '✓ STAMPED' : 'PENDING'}
                     </span>
                   </div>
                 );
               })}
             </div>
 
-            {/* Simulated Result Message */}
-            <div style={{ textAlign: 'center', marginTop: 24, padding: '14px', background: 'white', borderRadius: 12, border: '1px solid #e5e7eb' }}>
-              {simulatedStamps === 5 ? (
-                <div style={{ color: '#047857' }}>
-                  <strong style={{ fontSize: '1.05rem' }}>🎉 CELEBRATION! 5 STAMPS COMPLETED!</strong>
-                  <p style={{ fontSize: '0.85rem', margin: '4px 0 0' }}>
-                    You unlocked <strong>1 FREE dish below ₹200</strong>! Order your next meal and get ₹179–₹189 off instantly.
+            {/* Live Progress or Registration Call */}
+            {userProfile ? (
+              <div style={{ marginTop: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, color: '#4b5563', marginBottom: 6 }}>
+                  <span>Progress to next Free Dish:</span>
+                  <span style={{ color: '#164324' }}>
+                    {loyaltyStampsCount === 0
+                      ? 'Place your next ₹200+ order to earn Stamp #1'
+                      : `${loyaltyStampsCount} of 5 orders completed (${loyaltyStampsCount * 20}%)`}
+                  </span>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${(loyaltyStampsCount / 5) * 100}%` }} />
+                </div>
+
+                {unlockedFreeDishes > 0 ? (
+                  <div className="unlocked-reward-banner" style={{ marginTop: 16 }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#065f46' }}>
+                      🎉 You have {unlockedFreeDishes} Free Dish Reward ready!
+                    </h4>
+                    <p style={{ margin: '4px 0 10px', fontSize: '0.82rem', color: '#047857' }}>
+                      Pick any combo or dish below ₹200 and apply your reward in the plate drawer for ₹0!
+                    </p>
+                    <button
+                      onClick={() => {
+                        applyFreeDishReward();
+                        setActiveTab('customer');
+                      }}
+                      className="claim-reward-btn"
+                    >
+                      Pick Free Dish on Food Menu →
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                    <span style={{ fontSize: '0.85rem', color: '#475569' }}>
+                      💡 Need <strong>{neededForNextReward} more order(s)</strong> of ₹200+ for your free feast.
+                    </span>
+                    <button
+                      onClick={() => setActiveTab('customer')}
+                      style={{
+                        background: '#164324',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: 8,
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Browse Menu & Order →
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Inline Profile Activation Section */
+              <div id="profile-form-section" style={{ marginTop: 24, padding: '20px', background: '#fffbeb', borderRadius: 12, border: '2px dashed #e5a024' }}>
+                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#164324', margin: 0 }}>
+                    Create Your Profile in 10 Seconds
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: '#78350f', margin: '4px 0 0' }}>
+                    Enter your name and mobile number to activate your loyalty pass & start earning stamps!
                   </p>
                 </div>
-              ) : (
-                <div style={{ color: '#4b5563', fontSize: '0.9rem' }}>
-                  <strong>{simulatedStamps} of 5 stamps collected.</strong> {5 - simulatedStamps} more order(s) of ₹200+ unlocks your free feast!
-                </div>
-              )}
-            </div>
+
+                {formError && (
+                  <div style={{ background: '#fee2e2', color: '#dc2626', padding: '8px 12px', borderRadius: 6, fontSize: '0.82rem', fontWeight: 700, marginBottom: 12, textAlign: 'center' }}>
+                    {formError}
+                  </div>
+                )}
+
+                <form onSubmit={handleCreateProfileSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+                  <input
+                    type="text"
+                    placeholder="Full Name *"
+                    value={profileName}
+                    onChange={e => setProfileName(e.target.value)}
+                    style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                    required
+                  />
+                  <input
+                    type="tel"
+                    placeholder="10-digit Phone Number *"
+                    value={profilePhone}
+                    onChange={e => setProfilePhone(e.target.value)}
+                    style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem', fontWeight: 700 }}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Rajarhat Delivery Address (Optional)"
+                    value={profileAddress}
+                    onChange={e => setProfileAddress(e.target.value)}
+                    style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem', gridColumn: '1 / -1' }}
+                  />
+                  <button
+                    type="submit"
+                    style={{
+                      gridColumn: '1 / -1',
+                      background: '#164324',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px',
+                      borderRadius: 8,
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8
+                    }}
+                  >
+                    <Check size={18} color="#e5a024" />
+                    <span>Activate My Loyalty Stamp Pass →</span>
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -327,9 +490,9 @@ export const CampaignLanding = () => {
       <section className="campaign-section" style={{ background: '#ffffff' }}>
         <div className="campaign-container">
           <div className="section-heading-center">
-            <span className="section-subtag">CLAIMABLE DELICACIES</span>
+            <span className="section-subtag">ELIGIBLE DELICACIES</span>
             <h2 className="section-main-title">Dishes You Can Get 100% FREE</h2>
-            <p className="section-main-desc">All of these signature Bengali & North Indian favorites are eligible under your free dish reward!</p>
+            <p className="section-main-desc">All of these signature Bengali & North Indian favorites below ₹200 are eligible under your free reward!</p>
           </div>
 
           <div className="eligible-dishes-grid">
