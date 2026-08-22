@@ -28,6 +28,8 @@ import {
   Filter
 } from 'lucide-react';
 
+import { INITIAL_CATEGORIES } from '../data/initialMenu';
+
 const categoryIconMap = {
   Utensils, Sparkles, Flame, Soup, Leaf
 };
@@ -59,6 +61,22 @@ export const MenuSection = () => {
 
   const activeOrder = orders.find(o => o.id === activeOrderId && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
 
+  // Compute full unique categories list combining INITIAL_CATEGORIES, categories context, and any categories in menuItems
+  const allCategories = useMemo(() => {
+    const map = new Map();
+    INITIAL_CATEGORIES.forEach(c => map.set(c.id, c));
+    (categories || []).forEach(c => {
+      if (c && c.id) map.set(c.id, c);
+    });
+    (menuItems || []).forEach(item => {
+      if (item.category && item.category !== 'all' && !map.has(item.category)) {
+        const catName = item.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        map.set(item.category, { id: item.category, name: catName, icon: 'Utensils' });
+      }
+    });
+    return Array.from(map.values());
+  }, [categories, menuItems]);
+
   const toggleCategoryCollapse = (catId) => {
     setCollapsedCategories(prev => ({
       ...prev,
@@ -88,7 +106,7 @@ export const MenuSection = () => {
 
   // Group items by category for structured listing
   const groupedSections = useMemo(() => {
-    const validCategories = categories.filter(c => c.id !== 'all');
+    const validCategories = allCategories.filter(c => c.id !== 'all');
     return validCategories.map(cat => {
       const itemsInCat = filteredItems.filter(item => item.category === cat.id);
       return {
@@ -96,7 +114,7 @@ export const MenuSection = () => {
         items: itemsInCat
       };
     }).filter(group => activeCategory === 'all' ? group.items.length > 0 : group.id === activeCategory);
-  }, [categories, filteredItems, activeCategory]);
+  }, [allCategories, filteredItems, activeCategory]);
 
   const scrollToCategory = (catId) => {
     setActiveCategory(catId);
@@ -297,7 +315,7 @@ export const MenuSection = () => {
               <span>All Dishes ({menuItems.length})</span>
             </button>
 
-            {categories.filter(c => c.id !== 'all').map(cat => {
+            {allCategories.filter(c => c.id !== 'all').map(cat => {
               const catCount = menuItems.filter(m => m.category === cat.id).length;
               const isActive = activeCategory === cat.id;
               return (
@@ -407,7 +425,7 @@ export const MenuSection = () => {
                   <span className="browse-count">{menuItems.length}</span>
                 </button>
 
-                {categories.filter(c => c.id !== 'all').map(cat => {
+                {allCategories.filter(c => c.id !== 'all').map(cat => {
                   const count = menuItems.filter(m => m.category === cat.id).length;
                   const isActive = activeCategory === cat.id;
                   return (

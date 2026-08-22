@@ -115,14 +115,25 @@ export const AppProvider = ({ children }) => {
     });
 
     const unsubCategories = subscribeToCollection('categories', (fsCategories) => {
-      if (fsCategories && fsCategories.length > 0) {
+      if (fsCategories && fsCategories.length >= INITIAL_CATEGORIES.length) {
         setCategories(fsCategories);
+      } else {
+        setCategories(INITIAL_CATEGORIES);
+        INITIAL_CATEGORIES.forEach(c => saveFirestoreDoc('categories', c.id, c));
       }
     });
 
     const unsubMenu = subscribeToCollection('menu', (fsMenu) => {
       if (fsMenu && fsMenu.length > 0) {
-        setMenuItems(fsMenu);
+        const menuMap = new Map();
+        INITIAL_MENU.forEach(item => menuMap.set(item.id, item));
+        fsMenu.forEach(item => menuMap.set(item.id, item));
+        const mergedMenu = Array.from(menuMap.values());
+        setMenuItems(mergedMenu);
+        localStorage.setItem('de_menu', JSON.stringify(mergedMenu));
+      } else {
+        setMenuItems(INITIAL_MENU);
+        INITIAL_MENU.forEach(item => saveFirestoreDoc('menu', item.id, item));
       }
     });
 

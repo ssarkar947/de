@@ -98,7 +98,7 @@ export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Utensils color="#164324" size={20} />
-            <h3>{itemToEdit ? `Edit Dish "${itemToEdit.name}"` : 'Add New Menu Dish'}</h3>
+            <h3>{currentItem ? `Edit Dish "${currentItem.name}"` : 'Add New Menu Dish'}</h3>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
             <X size={20} />
@@ -113,7 +113,7 @@ export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="e.g. Kolkata Special Mutton Biryani"
+                placeholder="e.g. Basanti Pulao + Kosha Chicken"
                 style={{ width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #d1d5db', fontWeight: 700 }}
                 required
               />
