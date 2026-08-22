@@ -32,7 +32,6 @@ export const KitchenApp = () => {
 
   const [selectedFilter, setSelectedFilter] = useState('ALL'); // ALL, RECEIVED, PREPARING, READY
   const [selectedPrepTimes, setSelectedPrepTimes] = useState({});
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const filteredOrders = orders.filter(order => {
     if (selectedFilter === 'RECEIVED') return order.status === 'RECEIVED';
@@ -52,17 +51,6 @@ export const KitchenApp = () => {
   const handleAcceptOrder = (orderId) => {
     const mins = selectedPrepTimes[orderId] || 20;
     updateOrderStatus(orderId, 'PREPARING', mins);
-  };
-
-  const handleDownloadApp = () => {
-    // Triggers manifest PWA download / APK package link
-    const link = document.createElement('a');
-    link.href = '/manifest.json';
-    link.download = 'desieats-kitchen-app.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast('📥 Starting Desi Eats Kitchen Android App Install!');
   };
 
   const handlePrintKOT = (order) => {
@@ -173,29 +161,8 @@ export const KitchenApp = () => {
           </div>
         </div>
 
-        {/* Download Android App & Alarm Controls */}
+        {/* Alarm Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            onClick={handleDownloadApp}
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              border: 'none',
-              padding: '9px 16px',
-              borderRadius: 30,
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: '0.85rem',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-              fontFamily: 'var(--font-brand)'
-            }}
-          >
-            <Download size={16} /> 📱 Download Android App (.apk)
-          </button>
-
           <button
             onClick={playRingerBeep}
             style={{ background: '#334155', border: 'none', color: 'white', padding: '8px 14px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}

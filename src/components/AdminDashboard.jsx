@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { MenuEditorModal } from './MenuEditorModal';
 import { CouponManager } from './CouponManager';
@@ -19,16 +19,25 @@ import {
   Sparkles,
   Smartphone,
   CheckCircle2,
-  ListFilter
+  ListFilter,
+  Users,
+  History,
+  Search,
+  Download,
+  IndianRupee,
+  Phone,
+  MessageSquare,
+  Gift,
+  Award
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const {
-    orders,
+    orders = [],
     updateOrderStatus,
     deleteOrder,
     clearAllOrders,
-    menuItems,
+    menuItems = [],
     deleteMenuItem,
     toggleItemStock,
     resetMenuToDefault,
@@ -36,13 +45,18 @@ export const AdminDashboard = () => {
     setIsAudioMuted,
     isRinging,
     stopRingerLoop,
-    setActiveTab
+    setActiveTab,
+    showToast
   } = useApp();
 
-  const [activeAdminTab, setActiveAdminTab] = useState('orders'); // orders, categories, menu, coupons, pincodes
+  const [activeAdminTab, setActiveAdminTab] = useState('orders'); // orders, completed, customers, categories, menu, coupons, pincodes
   const [editingItem, setEditingItem] = useState(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [selectedPrepTimes, setSelectedPrepTimes] = useState({});
+
+  // Completed Orders & Customer Search Filters
+  const [completedSearch, setCompletedSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState('');
 
   const handleSetPrepTime = (orderId, mins) => {
     setSelectedPrepTimes(prev => ({ ...prev, [orderId]: mins }));
@@ -82,7 +96,7 @@ export const AdminDashboard = () => {
             </div>
           `).join('')}
           <div class="line"></div>
-          <p><b>Pay:</b> ${order.paymentMethod.toUpperCase()} | Total: ₹${order.totalAmount}</p>
+          <p><b>Pay:</b> ${order.paymentMethod ? order.paymentMethod.toUpperCase() : 'CASH'} | Total: ₹${order.totalAmount}</p>
           ${order.instructions ? `<p><b>Note:</b> ${order.instructions}</p>` : ''}
         </body>
       </html>
@@ -96,6 +110,128 @@ export const AdminDashboard = () => {
   };
 
   const pendingCount = orders.filter(o => o.status === 'RECEIVED').length;
+  const liveOrders = orders.filter(o => o.status !== 'COMPLETED');
+  const completedOrders = orders.filter(o => o.status === 'COMPLETED');
+
+  // Filtered Completed Orders
+  const filteredCompletedOrders = completedOrders.filter(o => {
+    if (!completedSearch.trim()) return true;
+    const q = completedSearch.toLowerCase();
+    return (
+      (o.id && o.id.toLowerCase().includes(q)) ||
+      (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+      (o.customerPhone && o.customerPhone.includes(q)) ||
+      (o.address && o.address.toLowerCase().includes(q))
+    );
+  });
+
+  // Unique Customers Aggregation (CRM)
+  const customersList = useMemo(() => {
+    const customerMap = new Map();
+
+    orders.forEach(o => {
+      const phone = o.customerPhone || 'unknown';
+      if (!customerMap.has(phone)) {
+        customerMap.set(phone, {
+          phone,
+          name: o.customerName || 'Desi Foodie',
+          address: o.address || '',
+          pincode: o.pincode || '700135',
+          ordersCount: 0,
+          completedCount: 0,
+          totalSpent: 0,
+          lastOrderDate: o.createdAt,
+          qualifyingOrdersCount: 0
+        });
+      }
+
+      const c = customerMap.get(phone);
+      c.ordersCount += 1;
+      if (o.status === 'COMPLETED') c.completedCount += 1;
+      c.totalSpent += Number(o.totalAmount || o.subtotal || 0);
+      if (Number(o.totalAmount || o.subtotal || 0) >= 200) {
+        c.qualifyingOrdersCount += 1;
+      }
+      if (new Date(o.createdAt) > new Date(c.lastOrderDate)) {
+        c.lastOrderDate = o.createdAt;
+        if (o.address) c.address = o.address;
+        if (o.customerName) c.name = o.customerName;
+      }
+    });
+
+    return Array.from(customerMap.values());
+  }, [orders]);
+
+  const filteredCustomers = customersList.filter(c => {
+    if (!customerSearch.trim()) return true;
+    const q = customerSearch.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.phone.includes(q) ||
+      c.address.toLowerCase().includes(q)
+    );
+  });
+
+  // Export Completed Orders to CSV
+  const exportCompletedOrdersCSV = () => {
+    if (completedOrders.length === 0) {
+      showToast('No completed orders to export.');
+      return;
+    }
+    const headers = ['Order ID', 'Date & Time', 'Customer Name', 'Phone', 'Mode', 'Address', 'Pincode', 'Payment', 'Amount (INR)', 'Coupon Used', 'Items'];
+    const rows = completedOrders.map(o => [
+      `"${o.id}"`,
+      `"${new Date(o.createdAt).toLocaleString()}"`,
+      `"${o.customerName || ''}"`,
+      `"${o.customerPhone || ''}"`,
+      `"${o.orderMode}"`,
+      `"${(o.address || '').replace(/"/g, '""')}"`,
+      `"${o.pincode || ''}"`,
+      `"${o.paymentMethod || 'CASH'}"`,
+      o.totalAmount,
+      `"${o.appliedCouponCode || 'NONE'}"`,
+      `"${o.items.map(i => `${i.quantity}x ${i.item.name}`).join('; ')}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `desieats_completed_orders_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('📥 Completed Orders CSV Downloaded!');
+  };
+
+  // Export Customers Directory to CSV
+  const exportCustomersCSV = () => {
+    if (customersList.length === 0) {
+      showToast('No customer records to export.');
+      return;
+    }
+    const headers = ['Customer Name', 'Phone Number', 'Delivery Address', 'Pincode', 'Total Orders', 'Total Spent (INR)', 'Stamps Progress (0-5)', 'Last Order Date'];
+    const rows = customersList.map(c => [
+      `"${c.name}"`,
+      `"${c.phone}"`,
+      `"${(c.address || '').replace(/"/g, '""')}"`,
+      `"${c.pincode || ''}"`,
+      c.ordersCount,
+      c.totalSpent,
+      `${c.qualifyingOrdersCount % 5}/5`,
+      `"${new Date(c.lastOrderDate).toLocaleDateString()}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `desieats_customers_directory_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('📥 Customers Directory CSV Downloaded!');
+  };
 
   return (
     <div className="admin-container">
@@ -109,7 +245,7 @@ export const AdminDashboard = () => {
             </h1>
           </div>
           <p style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-            Live order fulfillment, menu editor, promo offers & Rajarhat delivery management
+            Live order fulfillment, completed orders archive, customer CRM & menu management
           </p>
         </div>
 
@@ -185,12 +321,28 @@ export const AdminDashboard = () => {
           className={`admin-nav-tab ${activeAdminTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveAdminTab('orders')}
         >
-          Live Orders ({orders.filter(o => o.status !== 'COMPLETED').length})
+          Live Orders ({liveOrders.length})
           {pendingCount > 0 && (
             <span style={{ background: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 7px', fontSize: '0.75rem', marginLeft: 6 }}>
               {pendingCount}
             </span>
           )}
+        </button>
+
+        <button
+          className={`admin-nav-tab ${activeAdminTab === 'completed' ? 'active' : ''}`}
+          onClick={() => setActiveAdminTab('completed')}
+        >
+          <History size={15} style={{ display: 'inline', marginRight: 4 }} />
+          Completed Archive ({completedOrders.length})
+        </button>
+
+        <button
+          className={`admin-nav-tab ${activeAdminTab === 'customers' ? 'active' : ''}`}
+          onClick={() => setActiveAdminTab('customers')}
+        >
+          <Users size={15} style={{ display: 'inline', marginRight: 4 }} />
+          Customers CRM ({customersList.length})
         </button>
 
         <button
@@ -228,7 +380,7 @@ export const AdminDashboard = () => {
           {orders.length > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, background: '#ffffff', padding: '12px 18px', borderRadius: 12, border: '1px solid #e5e7eb' }}>
               <span style={{ fontSize: '0.88rem', color: '#475569', fontWeight: 600 }}>
-                Total Orders in Queue: <strong>{orders.length}</strong> (Active: <strong>{orders.filter(o => o.status !== 'COMPLETED').length}</strong>)
+                Total Orders in System: <strong>{orders.length}</strong> (Active: <strong>{liveOrders.length}</strong> • Completed: <strong>{completedOrders.length}</strong>)
               </span>
               <button
                 onClick={() => {
@@ -255,15 +407,15 @@ export const AdminDashboard = () => {
             </div>
           )}
 
-          {orders.length === 0 ? (
+          {liveOrders.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: 16, border: '1px solid #e5e7eb' }}>
               <ChefHat size={48} color="#9ca3af" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '1.2rem', color: '#374151' }}>No Incoming Orders Yet (Fresh Slate)</h3>
-              <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>The system is live and ready for public orders. When a customer orders, it will appear here in real time with audio chime alerts.</p>
+              <h3 style={{ fontSize: '1.2rem', color: '#374151' }}>No Active Live Orders Right Now</h3>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>New orders will appear here in real time with loud audio chime alerts. You can view all completed past orders in the <strong>Completed Archive</strong> tab.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
-              {orders.map(order => {
+              {liveOrders.map(order => {
                 const currentPrepTime = selectedPrepTimes[order.id] || 20;
 
                 return (
@@ -331,7 +483,7 @@ export const AdminDashboard = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e5e7eb', paddingTop: 10, marginTop: 10 }}>
                       <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                        Payment: <strong>{order.paymentMethod.toUpperCase()}</strong>
+                        Payment: <strong>{order.paymentMethod ? order.paymentMethod.toUpperCase() : 'CASH'}</strong>
                       </span>
                       <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#164324', fontFamily: 'var(--font-brand)' }}>
                         Total: ₹{order.totalAmount}
@@ -349,15 +501,16 @@ export const AdminDashboard = () => {
                             {[15, 20, 30, 45].map(mins => (
                               <button
                                 key={mins}
+                                type="button"
                                 onClick={() => handleSetPrepTime(order.id, mins)}
                                 style={{
                                   flex: 1,
                                   padding: '6px 0',
                                   borderRadius: 6,
                                   border: currentPrepTime === mins ? '2px solid #164324' : '1px solid #d1d5db',
-                                  background: currentPrepTime === mins ? '#164324' : '#fff',
-                                  color: currentPrepTime === mins ? '#fff' : '#374151',
-                                  fontWeight: 700,
+                                  background: currentPrepTime === mins ? '#e5a024' : 'white',
+                                  color: currentPrepTime === mins ? '#164324' : '#374151',
+                                  fontWeight: 800,
                                   cursor: 'pointer',
                                   fontSize: '0.8rem'
                                 }}
@@ -431,13 +584,288 @@ export const AdminDashboard = () => {
                             fontFamily: 'var(--font-brand)'
                           }}
                         >
-                          <CheckCircle size={18} /> Complete Order
+                          <CheckCircle size={18} /> Complete Order & Save to Archive
                         </button>
                       )}
                     </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: COMPLETED ORDERS ARCHIVE */}
+      {activeAdminTab === 'completed' && (
+        <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginBottom: 20 }}>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#164324', margin: 0, fontFamily: 'var(--font-brand)' }}>
+                Completed Orders Archive ({completedOrders.length})
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '4px 0 0' }}>
+                Permanent historical record of all fulfilled orders, customer bills & revenue
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                onClick={exportCompletedOrdersCSV}
+                style={{
+                  background: '#164324',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <Download size={15} /> Export Orders CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Metric Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: 14, borderRadius: 10 }}>
+              <span style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Total Completed</span>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#15803d', marginTop: 2 }}>{completedOrders.length}</div>
+            </div>
+            <div style={{ background: '#fefce8', border: '1px solid #fef08a', padding: 14, borderRadius: 10 }}>
+              <span style={{ fontSize: '0.78rem', color: '#854d0e', fontWeight: 700, textTransform: 'uppercase' }}>Total Revenue</span>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a16207', marginTop: 2 }}>
+                ₹{completedOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0)}
+              </div>
+            </div>
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: 14, borderRadius: 10 }}>
+              <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 700, textTransform: 'uppercase' }}>Avg Order Value</span>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e293b', marginTop: 2 }}>
+                ₹{completedOrders.length > 0 ? Math.round(completedOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0) / completedOrders.length) : 0}
+              </div>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <div style={{ position: 'relative', marginBottom: 16 }}>
+            <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 12 }} />
+            <input
+              type="text"
+              placeholder="Search by Order ID, Customer Name, Phone, or Address..."
+              value={completedSearch}
+              onChange={e => setCompletedSearch(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px 10px 42px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+            />
+          </div>
+
+          {filteredCompletedOrders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+              <History size={40} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
+              <h4>No Completed Orders Found</h4>
+              <p style={{ fontSize: '0.85rem' }}>Completed orders are permanently preserved and will appear here.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#475569', fontWeight: 800 }}>
+                    <th style={{ padding: 12 }}>Order ID & Date</th>
+                    <th style={{ padding: 12 }}>Customer Details</th>
+                    <th style={{ padding: 12 }}>Items Ordered</th>
+                    <th style={{ padding: 12 }}>Mode & Address</th>
+                    <th style={{ padding: 12, textAlign: 'right' }}>Total</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCompletedOrders.map(order => (
+                    <tr key={order.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 800, color: '#164324' }}>#{order.id}</div>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 700 }}>{order.customerName}</div>
+                        <a href={`tel:${order.customerPhone}`} style={{ fontSize: '0.78rem', color: '#d85d27', textDecoration: 'none' }}>
+                          📞 {order.customerPhone}
+                        </a>
+                      </td>
+
+                      <td style={{ padding: 12, maxWidth: 260 }}>
+                        {order.items.map((it, idx) => (
+                          <div key={idx} style={{ fontSize: '0.8rem', color: '#334155' }}>
+                            {it.quantity}x {it.item.name} {it.selectedVariation ? `(${it.selectedVariation.name})` : ''}
+                          </div>
+                        ))}
+                      </td>
+
+                      <td style={{ padding: 12, maxWidth: 220 }}>
+                        <span style={{ fontSize: '0.75rem', background: order.orderMode === 'delivery' ? '#ecfdf5' : '#fef3c7', color: order.orderMode === 'delivery' ? '#047857' : '#b45309', padding: '2px 6px', borderRadius: 4, fontWeight: 800, textTransform: 'uppercase' }}>
+                          {order.orderMode}
+                        </span>
+                        <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 3 }}>
+                          {order.address} {order.pincode && `(${order.pincode})`}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'right' }}>
+                        <div style={{ fontWeight: 900, color: '#164324', fontSize: '1rem' }}>₹{order.totalAmount}</div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{order.paymentMethod ? order.paymentMethod.toUpperCase() : 'CASH'}</span>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'center' }}>
+                        <button
+                          onClick={() => handlePrintKOT(order)}
+                          style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                          title="Print Receipt"
+                        >
+                          <Printer size={13} /> Print
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: CUSTOMERS DIRECTORY CRM */}
+      {activeAdminTab === 'customers' && (
+        <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginBottom: 20 }}>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#164324', margin: 0, fontFamily: 'var(--font-brand)' }}>
+                Registered Customers Directory CRM ({customersList.length})
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '4px 0 0' }}>
+                Complete directory of all saved customer profiles, lifetime spending & loyalty stamp progress
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                onClick={exportCustomersCSV}
+                style={{
+                  background: '#164324',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <Download size={15} /> Export Customers CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <div style={{ position: 'relative', marginBottom: 16 }}>
+            <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 12 }} />
+            <input
+              type="text"
+              placeholder="Search customer by Name, Phone, or Delivery Address..."
+              value={customerSearch}
+              onChange={e => setCustomerSearch(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px 10px 42px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+            />
+          </div>
+
+          {filteredCustomers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+              <Users size={40} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
+              <h4>No Customer Records Found</h4>
+              <p style={{ fontSize: '0.85rem' }}>Customer data is automatically captured on profile creation and order placement.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#475569', fontWeight: 800 }}>
+                    <th style={{ padding: 12 }}>Customer Name</th>
+                    <th style={{ padding: 12 }}>Mobile Number</th>
+                    <th style={{ padding: 12 }}>Delivery Address</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Total Orders</th>
+                    <th style={{ padding: 12, textAlign: 'right' }}>Lifetime Spend</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Stamps Progress</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Quick WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCustomers.map((cust, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 800, color: '#164324' }}>{cust.name}</div>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Last active: {new Date(cust.lastOrderDate).toLocaleDateString()}</span>
+                      </td>
+
+                      <td style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 700 }}>📞 {cust.phone}</div>
+                      </td>
+
+                      <td style={{ padding: 12, maxWidth: 220 }}>
+                        <div style={{ fontSize: '0.82rem', color: '#334155' }}>
+                          {cust.address || 'Takeaway Spot / Address Not Set'}
+                        </div>
+                        {cust.pincode && <span style={{ fontSize: '0.72rem', color: '#64748b' }}>PIN: {cust.pincode}</span>}
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'center' }}>
+                        <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: 6, fontWeight: 800 }}>
+                          {cust.ordersCount} orders
+                        </span>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'right' }}>
+                        <strong style={{ color: '#164324', fontSize: '0.95rem' }}>₹{cust.totalSpent}</strong>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'center' }}>
+                        <span style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde047', padding: '2px 8px', borderRadius: 6, fontSize: '0.78rem', fontWeight: 800 }}>
+                          ★ {cust.qualifyingOrdersCount % 5}/5 Stamps
+                        </span>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'center' }}>
+                        <a
+                          href={`https://wa.me/91${cust.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${cust.name}, greetings from Desi Eats Rajarhat! 🍛`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            background: '#25d366',
+                            color: 'white',
+                            textDecoration: 'none',
+                            padding: '4px 10px',
+                            borderRadius: 6,
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4
+                          }}
+                        >
+                          <MessageSquare size={13} /> Chat
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
