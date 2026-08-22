@@ -34,10 +34,10 @@ export const FoodCard = ({ item }) => {
   };
 
   const handleIncrement = () => {
-    if (hasCustomizations) {
-      setIsCustomizing(true);
-    } else if (cartItemsForThisDish.length > 0) {
+    if (cartItemsForThisDish.length > 0) {
       updateCartQuantity(cartItemsForThisDish[0].cartId, 1);
+    } else if (hasCustomizations) {
+      setIsCustomizing(true);
     } else {
       addToCart(item, null, [], 1);
     }
@@ -107,10 +107,10 @@ export const FoodCard = ({ item }) => {
           {/* Rich Description (Detailed, Image-Free) */}
           <p className="swiggy-dish-desc">{item.description}</p>
 
-          {/* Customisable indicator tag */}
+          {/* Customisable indicator tag (Only if enabled by admin) */}
           {hasCustomizations && (
             <div className="swiggy-custom-tag">
-              <span>Customisable portion & add-ons</span>
+              <span>Customisable portion / options</span>
             </div>
           )}
         </div>
@@ -119,8 +119,8 @@ export const FoodCard = ({ item }) => {
         <div className="dish-action-col">
           {item.inStock ? (
             <div className="swiggy-btn-wrapper">
-              {totalQuantityInCart > 0 && !hasCustomizations ? (
-                /* Stepper Counter */
+              {totalQuantityInCart > 0 ? (
+                /* Stepper Counter - Direct +/- without any popups */
                 <div className="swiggy-stepper-btn">
                   <button onClick={handleDecrement} className="stepper-sub-btn" aria-label="Decrease quantity">
                     <Minus size={14} />
@@ -138,7 +138,7 @@ export const FoodCard = ({ item }) => {
                 </button>
               )}
 
-              {hasCustomizations && (
+              {hasCustomizations && totalQuantityInCart === 0 && (
                 <span className="swiggy-custom-label">Customisable</span>
               )}
             </div>
