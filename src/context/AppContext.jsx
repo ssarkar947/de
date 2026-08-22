@@ -27,12 +27,13 @@ export const AppProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
-  const MENU_SCHEMA_VERSION = 'v5_clean_no_addons_2026';
+  const MENU_SCHEMA_VERSION = 'v8_full_57_dishes_clean';
 
   // Categories Management
   const [categories, setCategories] = useState(() => {
     const savedVersion = localStorage.getItem('de_menu_version');
     if (savedVersion !== MENU_SCHEMA_VERSION) {
+      localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
       localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
       return INITIAL_CATEGORIES;
     }
@@ -86,21 +87,20 @@ export const AppProvider = ({ children }) => {
     return 'customer';
   });
 
-  // Orders Management
+  // Active Order Tracker State
   const [orders, setOrders] = useState(() => {
     const saved = localStorage.getItem('de_orders');
     return saved ? JSON.parse(saved) : [];
   });
-
   const [activeOrderId, setActiveOrderId] = useState(() => {
     return localStorage.getItem('de_active_order_id') || null;
   });
-
   const [isOrderTrackerOpen, setIsOrderTrackerOpen] = useState(false);
+
+  // Notification Sound & Audio Chime
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isRinging, setIsRinging] = useState(false);
-
-  // Audio Context Ref for Continuous Kitchen Ringer
+  const audioContextRef = useRef(null);
   const ringerIntervalRef = useRef(null);
 
   // Notification Toast message
@@ -125,9 +125,17 @@ export const AppProvider = ({ children }) => {
 
     const unsubMenu = subscribeToCollection('menu', (fsMenu) => {
       if (fsMenu && fsMenu.length > 0) {
+        // Clean out any stale old menu items with old ID format from Firestore
+        fsMenu.forEach(item => {
+          if (item.id && (item.id.startsWith('de-nv-') || item.id.startsWith('de-v-') || item.id.startsWith('de-h-'))) {
+            deleteFirestoreDoc('menu', item.id);
+          }
+        });
+        const validFsMenu = fsMenu.filter(item => item.id && !item.id.startsWith('de-nv-') && !item.id.startsWith('de-v-') && !item.id.startsWith('de-h-'));
+
         const menuMap = new Map();
         INITIAL_MENU.forEach(item => menuMap.set(item.id, item));
-        fsMenu.forEach(item => menuMap.set(item.id, item));
+        validFsMenu.forEach(item => menuMap.set(item.id, item));
         const mergedMenu = Array.from(menuMap.values());
         setMenuItems(mergedMenu);
         localStorage.setItem('de_menu', JSON.stringify(mergedMenu));
