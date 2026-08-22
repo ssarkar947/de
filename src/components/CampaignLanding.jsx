@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Gift,
@@ -14,19 +14,19 @@ import {
   Share2,
   ChevronDown,
   ChevronUp,
-  Heart,
-  Store,
   User,
-  PartyPopper
+  ShoppingBag,
+  ArrowLeft,
+  Check
 } from 'lucide-react';
 
 export const CampaignLanding = () => {
   const {
     setActiveTab,
-    loyaltyStampsCount,
-    unlockedFreeDishes,
+    loyaltyStampsCount = 0,
+    unlockedFreeDishes = 0,
     userProfile,
-    menuItems,
+    menuItems = [],
     addToCart,
     setIsCartOpen,
     applyFreeDishReward
@@ -35,13 +35,17 @@ export const CampaignLanding = () => {
   const [simulatedStamps, setSimulatedStamps] = useState(loyaltyStampsCount || 0);
   const [openFaq, setOpenFaq] = useState(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const toggleFaq = (idx) => {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(
-      `🍛 *Desi Eats Rajarhat Special Offer!*\n\nOrder 5 times (₹200+ each) and get *1 FREE Dish below ₹200* on your next order! Authentic Bengali Kosha Chicken, Basanti Pulao, Tandoori Naan & pure veg delicacies.\n\nCheck out the menu & claim your stamps here:\nhttps://desieats.online`
+      `🍛 *Desi Eats Rajarhat Loyalty Offer!*\n\nOrder 5 times (₹200+ each) and get *1 FREE Dish below ₹200* on your next order! Authentic Bengali Kosha Chicken, Basanti Pulao, Tandoori Naan & pure veg delicacies.\n\nCheck out the menu & claim your stamps here:\nhttps://desieats.online/#campaign`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -98,7 +102,7 @@ export const CampaignLanding = () => {
     },
     {
       q: 'How do I collect and track my stamps?',
-      a: 'You do not need complicated membership cards! Whenever you order, just provide your 10-digit phone number. Your digital stamp card automatically updates with each qualifying order.'
+      a: 'You do not need physical cards! Whenever you order, just provide your 10-digit phone number. Your digital stamp card automatically updates with each qualifying order.'
     },
     {
       q: 'Which free dishes can I choose when I complete 5 stamps?',
@@ -116,6 +120,21 @@ export const CampaignLanding = () => {
 
   return (
     <div className="campaign-page-wrapper">
+      {/* 0. Top Back Bar */}
+      <div className="campaign-top-bar">
+        <div className="campaign-top-bar-inner">
+          <button onClick={() => setActiveTab('customer')} className="campaign-back-btn">
+            <ArrowLeft size={16} />
+            <span>Back to Food Menu</span>
+          </button>
+
+          <button onClick={() => setActiveTab('profile')} className="campaign-profile-link-btn">
+            <User size={15} />
+            <span>My Profile ({loyaltyStampsCount}/5 Stamps)</span>
+          </button>
+        </div>
+      </div>
+
       {/* 1. CAMPAIGN HERO BANNER */}
       <section className="campaign-hero">
         <div className="campaign-hero-inner">
@@ -155,10 +174,10 @@ export const CampaignLanding = () => {
           <div className="live-user-status-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 800, color: '#e5a024', letterSpacing: 1 }}>
-                  YOUR CURRENT STATUS ({userProfile ? userProfile.name : 'Guest'})
+                <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, color: '#e5a024', letterSpacing: 1 }}>
+                  YOUR CURRENT STATUS ({userProfile?.name ? userProfile.name : 'Guest'})
                 </span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', marginTop: 2 }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'white', marginTop: 2 }}>
                   {unlockedFreeDishes > 0
                     ? `🎉 You have ${unlockedFreeDishes} FREE Dish ready to claim!`
                     : `${loyaltyStampsCount}/5 Stamps collected • ${5 - loyaltyStampsCount} more order(s) for a Free Dish`}
@@ -289,7 +308,7 @@ export const CampaignLanding = () => {
             <div style={{ textAlign: 'center', marginTop: 24, padding: '14px', background: 'white', borderRadius: 12, border: '1px solid #e5e7eb' }}>
               {simulatedStamps === 5 ? (
                 <div style={{ color: '#047857' }}>
-                  <strong style={{ fontSize: '1.1rem' }}>🎉 CELEBRATION! 5 STAMPS COMPLETED!</strong>
+                  <strong style={{ fontSize: '1.05rem' }}>🎉 CELEBRATION! 5 STAMPS COMPLETED!</strong>
                   <p style={{ fontSize: '0.85rem', margin: '4px 0 0' }}>
                     You unlocked <strong>1 FREE dish below ₹200</strong>! Order your next meal and get ₹179–₹189 off instantly.
                   </p>

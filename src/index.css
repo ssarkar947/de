@@ -2520,3 +2520,243 @@ body {
   gap: 8px;
 }
 
+/* =========================================================================
+   MOBILE RESPONSIVENESS & MOBILE BOTTOM NAV BAR
+   ========================================================================= */
+
+.mobile-only {
+  display: none !important;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.location-badge-btn-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-gold-light);
+  border: 1px solid rgba(229, 160, 36, 0.4);
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #92400e;
+  cursor: pointer;
+}
+
+.campaign-top-bar {
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 16px;
+  position: sticky;
+  top: 70px;
+  z-index: 40;
+}
+
+.campaign-top-bar-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.campaign-back-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #164324;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.campaign-profile-link-btn {
+  background: #fef3c7;
+  border: 1px solid #fde047;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #b45309;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+
+  .main-viewport-content {
+    padding-bottom: 64px;
+  }
+
+  /* Fixed Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-item.active {
+    color: #164324;
+    font-weight: 800;
+  }
+
+  .mobile-nav-item.active svg {
+    color: #164324;
+    stroke-width: 2.5px;
+  }
+
+  .mobile-nav-dot {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e5a024;
+    border: 1px solid white;
+  }
+
+  .mobile-nav-badge {
+    position: absolute;
+    top: -6px;
+    right: -12px;
+    background: #164324;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+
+  .mobile-nav-cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: #d85d27;
+    color: white;
+    font-size: 0.62rem;
+    font-weight: 900;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .campaign-sticky-footer {
+    bottom: 60px;
+  }
+
+  .campaign-hero {
+    padding: 36px 16px 30px;
+  }
+
+  .campaign-title {
+    font-size: 1.85rem;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .campaign-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  .campaign-section {
+    padding: 36px 16px;
+  }
+
+  .section-main-title {
+    font-size: 1.5rem;
+  }
+
+  .stamps-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .stamp-slot {
+    padding: 10px 4px !important;
+    border-radius: 8px !important;
+  }
+
+  .stamp-icon-wrap {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .stamp-icon-wrap svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .stamp-slot-number {
+    font-size: 0.9rem !important;
+  }
+
+  .stamp-label {
+    font-size: 0.62rem !important;
+    line-height: 1.1;
+  }
+
+  .stamp-earned-tag {
+    font-size: 0.55rem !important;
+  }
+
+  .profile-page-container {
+    padding: 16px 12px 60px;
+  }
+
+  .profile-hero-card {
+    padding: 16px;
+  }
+
+  .loyalty-campaign-card {
+    padding: 16px;
+  }
+}
+
+

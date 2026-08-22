@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   User,
@@ -21,7 +21,8 @@ import {
   Flame,
   Star,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  ArrowLeft
 } from 'lucide-react';
 
 export const UserProfile = () => {
@@ -30,12 +31,12 @@ export const UserProfile = () => {
     loginCustomer,
     updateCustomerProfile,
     logoutCustomer,
-    customerOrders,
-    qualifyingOrders,
-    loyaltyStampsCount,
-    totalEarnedFreeDishes,
-    claimedFreeDishes,
-    unlockedFreeDishes,
+    customerOrders = [],
+    qualifyingOrders = [],
+    loyaltyStampsCount = 0,
+    totalEarnedFreeDishes = 0,
+    claimedFreeDishes = 0,
+    unlockedFreeDishes = 0,
     setActiveTab,
     selectedPincode,
     setSelectedPincode,
@@ -54,6 +55,22 @@ export const UserProfile = () => {
     address: userProfile?.address || '',
     pincode: userProfile?.pincode || selectedPincode || '700135'
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        name: userProfile.name || '',
+        phone: userProfile.phone || '',
+        email: userProfile.email || '',
+        address: userProfile.address || '',
+        pincode: userProfile.pincode || selectedPincode || '700135'
+      });
+    }
+  }, [userProfile, selectedPincode]);
 
   const [loginPhoneInput, setLoginPhoneInput] = useState('');
   const [loginNameInput, setLoginNameInput] = useState('');

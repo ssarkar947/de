@@ -10,6 +10,7 @@ import { LocationModal } from './components/LocationModal';
 import { CartDrawer } from './components/CartDrawer';
 import { OrderTracker } from './components/OrderTracker';
 import { AuthModal } from './components/AuthModal';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { Sparkles, MapPin, Phone, Heart, Lock, ChefHat, Smartphone, ShieldCheck } from 'lucide-react';
 
 const MainContent = () => {
@@ -38,10 +39,15 @@ const MainContent = () => {
       <Header />
 
       {/* Dynamic View Router */}
-      {activeTab === 'profile' && <UserProfile />}
-      {activeTab === 'campaign' && <CampaignLanding />}
-      {activeTab === 'customer' && <MenuSection />}
-      {activeTab === 'admin' && <AdminDashboard />}
+      <main className="main-viewport-content">
+        {activeTab === 'profile' && <UserProfile />}
+        {activeTab === 'campaign' && <CampaignLanding />}
+        {activeTab === 'customer' && <MenuSection />}
+        {activeTab === 'admin' && <AdminDashboard />}
+      </main>
+
+      {/* Mobile Bottom Navigation Bar (Fixed at bottom on phones) */}
+      <MobileBottomNav />
 
       {/* Modals & Overlays */}
       <LocationModal />

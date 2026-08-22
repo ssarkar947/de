@@ -59,28 +59,42 @@ export const Header = () => {
 
         {/* Header Right Actions */}
         <div className="header-right">
-          {/* 5-for-1 Loyalty Campaign Promotional Button */}
+          {/* Mobile Only: Quick Location Pill */}
+          <div className="mobile-only">
+            {orderMode === 'delivery' ? (
+              <button className="location-badge-btn-mini" onClick={() => setIsLocationModalOpen(true)}>
+                <MapPin size={13} color="#d85d27" />
+                <span>{selectedPincode}</span>
+              </button>
+            ) : (
+              <button className="location-badge-btn-mini" onClick={() => setOrderMode('delivery')}>
+                <Store size={13} color="#b45309" />
+                <span>Takeaway</span>
+              </button>
+            )}
+          </div>
+
+          {/* Desktop Only: 5-for-1 Loyalty Campaign Promotional Button */}
           <button
-            className={`header-campaign-btn ${activeTab === 'campaign' ? 'active' : ''}`}
+            className={`header-campaign-btn desktop-only ${activeTab === 'campaign' ? 'active' : ''}`}
             onClick={() => setActiveTab('campaign')}
             title="5 Orders = 1 Free Dish below ₹200 Campaign"
           >
             <Gift size={16} color="#d97706" />
-            <span className="desktop-only">5-for-1 Free Dish</span>
-            <span className="mobile-only">🎁 Free Dish</span>
+            <span>5-for-1 Free Dish</span>
             {unlockedFreeDishes > 0 && (
               <span className="header-pulse-tag">1 FREE</span>
             )}
           </button>
 
-          {/* Customer User Profile Button */}
+          {/* Desktop Only: Customer User Profile Button */}
           <button
-            className={`header-profile-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            className={`header-profile-btn desktop-only ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
             title="My Profile & Loyalty Stamps"
           >
             <User size={16} />
-            <span className="desktop-only">
+            <span>
               {userProfile ? userProfile.name.split(' ')[0] : 'Profile'}
             </span>
             <span className="profile-stamp-mini-badge" title={`${loyaltyStampsCount}/5 stamps collected`}>
@@ -109,8 +123,8 @@ export const Header = () => {
 
           {/* My Plate Cart Drawer Button (Visible on both Mobile & Desktop - Right side) */}
           <button className="cart-icon-btn" onClick={() => setIsCartOpen(true)}>
-            <ShoppingBag size={20} />
-            <span>My Plate</span>
+            <ShoppingBag size={18} />
+            <span className="desktop-only">My Plate</span>
             {cartItemCount > 0 && <span className="cart-badge">{cartItemCount}</span>}
           </button>
         </div>

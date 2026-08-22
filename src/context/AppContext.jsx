@@ -90,14 +90,47 @@ export const AppProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // View switch: 'customer', 'admin', 'kitchen', 'profile', or 'campaign'
-  const [activeTab, setActiveTab] = useState(() => {
+  const [activeTab, setActiveTabState] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('view') === 'kitchen' || window.location.hash === '#kitchen') return 'kitchen';
-    if (params.get('view') === 'admin' || window.location.hash === '#admin') return 'admin';
-    if (params.get('view') === 'profile' || window.location.hash === '#profile') return 'profile';
-    if (params.get('view') === 'campaign' || window.location.hash === '#campaign' || window.location.hash === '#rewards') return 'campaign';
+    const hash = window.location.hash.toLowerCase();
+    if (params.get('view') === 'kitchen' || hash === '#kitchen') return 'kitchen';
+    if (params.get('view') === 'admin' || hash === '#admin') return 'admin';
+    if (params.get('view') === 'profile' || hash === '#profile') return 'profile';
+    if (params.get('view') === 'campaign' || hash === '#campaign' || hash === '#rewards' || hash === '#offer') return 'campaign';
     return 'customer';
   });
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      if (tab === 'customer') {
+        if (window.location.hash) {
+          window.history.pushState(null, '', window.location.pathname + window.location.search);
+        }
+      } else {
+        window.history.pushState(null, '', '#' + tab);
+      }
+    } catch (e) {
+      console.warn('History update error:', e);
+    }
+  };
+
+  // Sync with browser back / forward buttons (hashchange event)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#kitchen') setActiveTabState('kitchen');
+      else if (hash === '#admin') setActiveTabState('admin');
+      else if (hash === '#profile') setActiveTabState('profile');
+      else if (hash === '#campaign' || hash === '#rewards' || hash === '#offer') setActiveTabState('campaign');
+      else setActiveTabState('customer');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Active Order Tracker State
   const [orders, setOrders] = useState(() => {
