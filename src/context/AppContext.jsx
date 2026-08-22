@@ -5,6 +5,7 @@ import { INITIAL_COUPONS } from '../data/initialCoupons';
 import {
   subscribeToCollection,
   saveFirestoreDoc,
+  getFirestoreDoc,
   deleteFirestoreDoc,
   isFirebaseConnected
 } from '../firebase';
@@ -152,23 +153,31 @@ export const AppProvider = ({ children }) => {
   const [toastMessage, setToastMessage] = useState(null);
 
   // Customer Profile Management Methods
-  const loginCustomer = (profileData) => {
+  const loginCustomer = async (profileData) => {
+    const cleanPhone = (profileData.phone || '').replace(/\D/g, '');
+    let existingData = null;
+
+    if (cleanPhone) {
+      existingData = await getFirestoreDoc('users', cleanPhone);
+    }
+
     const profile = {
-      name: profileData.name || 'Desi Foodie',
-      phone: profileData.phone || '',
-      email: profileData.email || '',
-      address: profileData.address || '',
-      pincode: profileData.pincode || selectedPincode || '700135',
-      claimedRewardsCount: profileData.claimedRewardsCount || Number(localStorage.getItem('de_claimed_rewards') || 0),
-      joinedAt: profileData.joinedAt || new Date().toISOString()
+      name: profileData.name || existingData?.name || 'Desi Foodie',
+      phone: cleanPhone,
+      email: profileData.email || existingData?.email || '',
+      address: profileData.address || existingData?.address || '',
+      pincode: profileData.pincode || existingData?.pincode || selectedPincode || '700135',
+      claimedRewardsCount: existingData?.claimedRewardsCount ?? profileData.claimedRewardsCount ?? Number(localStorage.getItem('de_claimed_rewards') || 0),
+      joinedAt: existingData?.joinedAt || profileData.joinedAt || new Date().toISOString()
     };
+
     setUserProfile(profile);
     localStorage.setItem('de_user_profile', JSON.stringify(profile));
     if (profile.phone) {
       localStorage.setItem('de_saved_phone', profile.phone);
       saveFirestoreDoc('users', profile.phone, profile);
     }
-    showToast(`Welcome, ${profile.name}! 🍛`);
+    showToast(`Welcome, ${profile.name}! 🍛 Profile activated.`);
   };
 
   const updateCustomerProfile = (updatedData) => {
@@ -187,18 +196,19 @@ export const AppProvider = ({ children }) => {
   const logoutCustomer = () => {
     setUserProfile(null);
     localStorage.removeItem('de_user_profile');
+    localStorage.removeItem('de_saved_phone');
     setIsFreeDishRewardApplied(false);
     showToast('Logged out of customer profile');
   };
 
-  // Loyalty Campaign Calculations: 5 Orders (>= ₹200 each) = 1 FREE Dish below ₹200
-  const activeCustomerPhone = userProfile?.phone || localStorage.getItem('de_saved_phone') || '';
-  const customerOrders = orders.filter(o => activeCustomerPhone ? o.customerPhone === activeCustomerPhone : true);
-  const qualifyingOrders = customerOrders.filter(o => Number(o.totalAmount || o.subtotal) >= 200);
-  const loyaltyStampsCount = qualifyingOrders.length % 5;
-  const totalEarnedFreeDishes = Math.floor(qualifyingOrders.length / 5);
+  // Loyalty Campaign Calculations: Profile is REQUIRED first, then each order >= ₹200 gives +1 stamp
+  const activeCustomerPhone = userProfile?.phone || '';
+  const customerOrders = activeCustomerPhone ? orders.filter(o => o.customerPhone === activeCustomerPhone) : [];
+  const qualifyingOrders = customerOrders.filter(o => Number(o.totalAmount || o.subtotal || 0) >= 200);
+  const loyaltyStampsCount = userProfile ? (qualifyingOrders.length % 5) : 0;
+  const totalEarnedFreeDishes = userProfile ? Math.floor(qualifyingOrders.length / 5) : 0;
   const claimedFreeDishes = userProfile?.claimedRewardsCount ?? Number(localStorage.getItem('de_claimed_rewards') || 0);
-  const unlockedFreeDishes = Math.max(0, totalEarnedFreeDishes - claimedFreeDishes);
+  const unlockedFreeDishes = userProfile ? Math.max(0, totalEarnedFreeDishes - claimedFreeDishes) : 0;
 
   // Free Dish Reward Discount Calculation in Cart
   // Applies 100% free price on the highest priced eligible item in cart with price < 200 (up to ₹199)

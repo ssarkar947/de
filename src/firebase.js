@@ -3,6 +3,7 @@ import {
   getFirestore,
   collection,
   doc,
+  getDoc,
   setDoc,
   addDoc,
   updateDoc,
@@ -78,6 +79,22 @@ export const addFirestoreDoc = async (collectionName, data) => {
     return docRef.id;
   } catch (err) {
     console.warn(`Firestore add error [${collectionName}]:`, err);
+    return null;
+  }
+};
+
+// Get Single Document
+export const getFirestoreDoc = async (collectionName, docId) => {
+  if (!db) return null;
+  try {
+    const docRef = doc(db, collectionName, docId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (err) {
+    console.warn(`Firestore getDoc error [${collectionName}/${docId}]:`, err);
     return null;
   }
 };

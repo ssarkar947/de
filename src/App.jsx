@@ -10,6 +10,7 @@ import { LocationModal } from './components/LocationModal';
 import { CartDrawer } from './components/CartDrawer';
 import { OrderTracker } from './components/OrderTracker';
 import { AuthModal } from './components/AuthModal';
+import { CustomerAuthModal } from './components/CustomerAuthModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Sparkles, MapPin, Phone, Heart, Lock, ChefHat, Smartphone, ShieldCheck } from 'lucide-react';
 
@@ -54,6 +55,7 @@ const MainContent = () => {
       <CartDrawer />
       <OrderTracker />
       <AuthModal />
+      <CustomerAuthModal />
 
       {/* Footer with Official Brand Info & Backend Staff Access */}
       <footer style={{ background: '#164324', color: 'white', padding: '40px 24px 30px', marginTop: 'auto', borderTop: '4px solid #e5a024' }}>
