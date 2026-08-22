@@ -2,42 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { X, Plus, Trash2, Save, Sparkles, Utensils } from 'lucide-react';
 
-export const MenuEditorModal = ({ itemToEdit, onClose }) => {
+export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
   const { saveMenuItem, categories } = useApp();
+  const currentItem = item || itemToEdit;
 
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('non-veg-combos');
-  const [price, setPrice] = useState(199);
-  const [isVeg, setIsVeg] = useState(false);
-  const [isSpecial, setIsSpecial] = useState(false);
-  const [prepTime, setPrepTime] = useState('15 mins');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState(currentItem?.name || '');
+  const [category, setCategory] = useState(currentItem?.category || 'non-veg-combos');
+  const [price, setPrice] = useState(currentItem?.price ?? 149);
+  const [isVeg, setIsVeg] = useState(currentItem?.isVeg ?? false);
+  const [isSpecial, setIsSpecial] = useState(currentItem?.isSpecial ?? false);
+  const [prepTime, setPrepTime] = useState(currentItem?.prepTime || '15 mins');
+  const [description, setDescription] = useState(currentItem?.description || '');
 
   // Portion Variations (e.g. Half / Full)
-  const [variations, setVariations] = useState([]);
+  const [variations, setVariations] = useState(currentItem?.variations || []);
   const [varNameInput, setVarNameInput] = useState('');
-  const [varPriceInput, setVarPriceInput] = useState(199);
+  const [varPriceInput, setVarPriceInput] = useState(149);
 
   // Add-on Options
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState(currentItem?.options || []);
   const [optNameInput, setOptNameInput] = useState('');
   const [optPriceInput, setOptPriceInput] = useState(30);
 
   useEffect(() => {
-    if (itemToEdit) {
-      setName(itemToEdit.name || '');
-      setCategory(itemToEdit.category || 'non-veg-combos');
-      setPrice(itemToEdit.price || 199);
-      setIsVeg(itemToEdit.isVeg ?? false);
-      setIsSpecial(itemToEdit.isSpecial ?? false);
-      setPrepTime(itemToEdit.prepTime || '15 mins');
-      setDescription(itemToEdit.description || '');
-      setVariations(itemToEdit.variations || []);
-      setOptions(itemToEdit.options || []);
+    const target = item || itemToEdit;
+    if (target) {
+      setName(target.name || '');
+      setCategory(target.category || 'non-veg-combos');
+      setPrice(target.price ?? 149);
+      setIsVeg(target.isVeg ?? false);
+      setIsSpecial(target.isSpecial ?? false);
+      setPrepTime(target.prepTime || '15 mins');
+      setDescription(target.description || '');
+      setVariations(target.variations || []);
+      setOptions(target.options || []);
     } else {
       setName('');
       setCategory('non-veg-combos');
-      setPrice(199);
+      setPrice(149);
       setIsVeg(false);
       setIsSpecial(false);
       setPrepTime('15 mins');
@@ -45,7 +47,7 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       setVariations([]);
       setOptions([]);
     }
-  }, [itemToEdit]);
+  }, [item, itemToEdit]);
 
   const handleAddVariation = () => {
     if (!varNameInput.trim()) return;
@@ -72,9 +74,10 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
+    const target = item || itemToEdit;
 
     saveMenuItem({
-      id: itemToEdit ? itemToEdit.id : undefined,
+      id: target ? target.id : undefined,
       name: name.trim(),
       category,
       price: Number(price),
@@ -82,7 +85,7 @@ export const MenuEditorModal = ({ itemToEdit, onClose }) => {
       isSpecial,
       prepTime,
       description,
-      inStock: itemToEdit ? itemToEdit.inStock : true,
+      inStock: target ? target.inStock : true,
       variations,
       options
     });

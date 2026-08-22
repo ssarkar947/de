@@ -27,7 +27,7 @@ export const AppProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
-  const MENU_SCHEMA_VERSION = 'v4_official_card_menu_2026';
+  const MENU_SCHEMA_VERSION = 'v5_clean_no_addons_2026';
 
   // Categories Management
   const [categories, setCategories] = useState(() => {

@@ -27,11 +27,7 @@ export const INITIAL_MENU = [
     description: 'Fragrant sweet-scented golden Basanti Pulao paired with authentic Bengali slow-cooked spicy Kosha Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Kosha Gravy', price: 0 },
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 },
-      { name: 'Add Extra Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-02',
@@ -46,10 +42,7 @@ export const INITIAL_MENU = [
     description: 'Aromatic long-grain vegetable pulao loaded with fresh garden veggies, served with rich spicy Kosha Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Kosha Gravy', price: 0 },
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-03',
@@ -64,10 +57,7 @@ export const INITIAL_MENU = [
     description: 'Soft tandoori butter naan served alongside tender, flavorful Bengali Kosha Chicken gravy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 },
-      { name: 'Add Scrambled Eggs (+₹20)', price: 20 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-04',
@@ -82,9 +72,7 @@ export const INITIAL_MENU = [
     description: 'Fluffy golden fried naan pooris served with savory, rich slow-simmered Kosha Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-05',
@@ -99,9 +87,7 @@ export const INITIAL_MENU = [
     description: 'Fresh tandoori naan accompanied by deep-roasted spiced Ghee Chicken cooked to perfection.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-06',
@@ -116,9 +102,7 @@ export const INITIAL_MENU = [
     description: 'Crispy puffed naan pooris served with flavor-packed Desi Ghee Roast Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-07',
@@ -133,9 +117,7 @@ export const INITIAL_MENU = [
     description: 'Classic Gobindobhog Basanti Pulao infused with ghee and saffron, paired with fiery Desi Ghee Roast Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-08',
@@ -150,9 +132,7 @@ export const INITIAL_MENU = [
     description: 'Mild spiced fragrant vegetable pulao served with succulent chicken pan-roasted in pure aromatic desi ghee.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-09',
@@ -167,9 +147,7 @@ export const INITIAL_MENU = [
     description: 'Warm naan bread served with classic Bengali poppy seed (Posto) paste slow-simmered rich chicken delicacy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-10',
@@ -184,9 +162,7 @@ export const INITIAL_MENU = [
     description: 'Crispy golden naan poori paired with traditional creamy nutty Postobata Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-11',
@@ -201,9 +177,7 @@ export const INITIAL_MENU = [
     description: 'Signature sweet saffron Basanti Pulao served with royal, subtly spiced Postobata Chicken.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-12',
@@ -218,9 +192,7 @@ export const INITIAL_MENU = [
     description: 'Delicate vegetable pulao served with rich and aromatic Bengali poppy seed paste chicken curry.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-13',
@@ -235,9 +207,7 @@ export const INITIAL_MENU = [
     description: 'Golden Basanti Pulao accompanied by creamy, shredded Kolkata style Dhaba Chicken Bharta topped with egg garnish.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Extra Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-14',
@@ -252,9 +222,7 @@ export const INITIAL_MENU = [
     description: 'Flavorful garden vegetable pulao paired with Kolkata style shredded creamy spicy Chicken Bharta.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-15',
@@ -269,9 +237,7 @@ export const INITIAL_MENU = [
     description: 'Soft hot tandoori naan served with melt-in-mouth creamy minced Chicken Bharta.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-nvc-16',
@@ -286,9 +252,7 @@ export const INITIAL_MENU = [
     description: 'Puffed crispy naan pooris served alongside rich, luscious spiced Kolkata Chicken Bharta.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
 
   // =========================================================================
@@ -307,10 +271,7 @@ export const INITIAL_MENU = [
     description: 'Golden fragrant Basanti Pulao served with royal Shahi Paneer cooked in a rich, creamy cashew-nut gravy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Grilled Paneer (+₹59)', price: 59 },
-      { name: 'Add Boiled Chickpeas (+₹29)', price: 29 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-02',
@@ -325,9 +286,7 @@ export const INITIAL_MENU = [
     description: 'Long-grain aromatic vegetable pulao paired with mild, royal sweet-savory Shahi Paneer gravy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Grilled Paneer (+₹59)', price: 59 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-03',
@@ -342,9 +301,7 @@ export const INITIAL_MENU = [
     description: 'Soft tandoori naan accompanied by luscious royal Shahi Paneer in velvety cashew gravy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-04',
@@ -359,9 +316,7 @@ export const INITIAL_MENU = [
     description: 'Crispy fried golden naan pooris paired with delicate, rich royal Shahi Paneer.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-05',
@@ -376,9 +331,7 @@ export const INITIAL_MENU = [
     description: 'Fresh butter naan served alongside succulent paneer cubes in creamy tomato-butter makhani gravy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-06',
@@ -393,9 +346,7 @@ export const INITIAL_MENU = [
     description: 'Golden puffed naan pooris served with all-time favorite rich Paneer Butter Masala.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-07',
@@ -410,9 +361,7 @@ export const INITIAL_MENU = [
     description: 'Saffron-sweet Basanti Pulao served with creamy, aromatic Paneer Butter Masala.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-08',
@@ -427,9 +376,7 @@ export const INITIAL_MENU = [
     description: 'Aromatic vegetable pulao paired with rich, mild-spiced Paneer Butter Masala.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Boiled Chickpeas (+₹29)', price: 29 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-09',
@@ -444,9 +391,7 @@ export const INITIAL_MENU = [
     description: 'Warm naan bread served with traditional Bengali poppy seed paste (Posto) cooked fresh cottage cheese.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-10',
@@ -461,9 +406,7 @@ export const INITIAL_MENU = [
     description: 'Crispy naan pooris paired with classic nutty and aromatic Posto Paneer.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-11',
@@ -478,9 +421,7 @@ export const INITIAL_MENU = [
     description: 'Sweet aromatic Basanti Pulao served with authentic Bengali Posto Paneer delicacy.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Boiled Chickpeas (+₹29)', price: 29 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-12',
@@ -495,9 +436,7 @@ export const INITIAL_MENU = [
     description: 'Wholesome vegetable pulao accompanied by rich, traditional Bengali Posto Paneer.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-13',
@@ -512,9 +451,7 @@ export const INITIAL_MENU = [
     description: 'Traditional homestyle Bengali Paneer & potato curry cooked in mild cumin-ginger gravy, paired with Basanti Pulao.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-14',
@@ -529,9 +466,7 @@ export const INITIAL_MENU = [
     description: 'Fragrant vegetable pulao served with homestyle comforting Bengali Paneer Aloor Torkari.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Boiled Chickpeas (+₹29)', price: 29 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-15',
@@ -546,9 +481,7 @@ export const INITIAL_MENU = [
     description: 'Hot soft naan served with comforting, flavorful Paneer and Potato curry.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan (+₹25)', price: 25 }
-    ]
+    options: []
   },
   {
     id: 'de-vc-16',
@@ -563,9 +496,7 @@ export const INITIAL_MENU = [
     description: 'Crispy puffed naan pooris served with traditional spicy Bengali Paneer Aloor Torkari.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Naan Poori (+₹35)', price: 35 }
-    ]
+    options: []
   },
 
   // =========================================================================
@@ -581,16 +512,10 @@ export const INITIAL_MENU = [
     rating: 4.9,
     reviews: 290,
     prepTime: '15 mins',
-    description: 'High-protein fitness platter with ghee tossed seasoned garden vegetables, tender grilled chicken breast, and choice of farm-fresh eggs over aromatic rice.',
+    description: 'High-protein fitness platter with ghee tossed seasoned garden vegetables, tender grilled chicken breast, and eggs over aromatic rice.',
     inStock: true,
-    variations: [
-      { name: 'With Sunny Side Up Egg', price: 199 },
-      { name: 'With Scrambled Eggs', price: 199 }
-    ],
-    options: [
-      { name: 'Extra Boiled Chickpeas (+₹29)', price: 29 },
-      { name: 'Extra Grilled Chicken Breast (+₹59)', price: 59 }
-    ]
+    variations: [],
+    options: []
   },
   {
     id: 'de-hc-02',
@@ -604,13 +529,8 @@ export const INITIAL_MENU = [
     prepTime: '15 mins',
     description: 'Wholesome 100% whole wheat wrap packed with protein-rich grilled chicken, farm-fresh eggs, and crisp ghee-sautéed veggies.',
     inStock: true,
-    variations: [
-      { name: 'With Sunny Side Up Egg', price: 199 },
-      { name: 'With Scrambled Eggs', price: 199 }
-    ],
-    options: [
-      { name: 'Extra Grilled Chicken (+₹59)', price: 59 }
-    ]
+    variations: [],
+    options: []
   },
   {
     id: 'de-hc-03',
@@ -625,10 +545,7 @@ export const INITIAL_MENU = [
     description: 'Clean vegetarian power bowl featuring grilled paneer cubes, protein-packed boiled chickpeas, and ghee-tossed vegetables on rice.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Grilled Paneer (+₹59)', price: 59 },
-      { name: 'Extra Boiled Chickpeas (+₹29)', price: 29 }
-    ]
+    options: []
   },
   {
     id: 'de-hc-04',
@@ -643,9 +560,7 @@ export const INITIAL_MENU = [
     description: 'Healthy high-fiber whole wheat wrap filled with juicy grilled paneer, seasoned boiled chickpeas, and fresh tossed greens.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Extra Grilled Paneer (+₹59)', price: 59 }
-    ]
+    options: []
   },
   {
     id: 'de-hc-05',
@@ -660,10 +575,7 @@ export const INITIAL_MENU = [
     description: 'Signature DesiEats single portion light & aromatic spiced Chicken Pulao with tender juicy chicken piece.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 },
-      { name: 'Add Tossed Veggies (+₹39)', price: 39 }
-    ]
+    options: []
   },
 
   // =========================================================================
@@ -712,9 +624,7 @@ export const INITIAL_MENU = [
     description: 'Flavorful basmati rice cooked with tender marinated chicken pieces, whole spices, and desi ghee.',
     inStock: true,
     variations: [],
-    options: [
-      { name: 'Add Sunny Side Up Egg (+₹15)', price: 15 }
-    ]
+    options: []
   },
 
   // =========================================================================

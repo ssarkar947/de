@@ -623,8 +623,13 @@ export const AdminDashboard = () => {
       {/* Modal for Menu Item Add/Edit */}
       {isMenuModalOpen && (
         <MenuEditorModal
+          key={editingItem ? editingItem.id : 'new-dish-modal'}
           item={editingItem}
-          onClose={() => setIsMenuModalOpen(false)}
+          itemToEdit={editingItem}
+          onClose={() => {
+            setIsMenuModalOpen(false);
+            setEditingItem(null);
+          }}
         />
       )}
     </div>
