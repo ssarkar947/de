@@ -2,6 +2,8 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { MenuSection } from './components/MenuSection';
+import { UserProfile } from './components/UserProfile';
+import { CampaignLanding } from './components/CampaignLanding';
 import { AdminDashboard } from './components/AdminDashboard';
 import { KitchenApp } from './components/KitchenApp';
 import { LocationModal } from './components/LocationModal';
@@ -35,8 +37,11 @@ const MainContent = () => {
       {/* Main Header */}
       <Header />
 
-      {/* Dynamic View (Customer Menu vs Kitchen Admin Dashboard) */}
-      {activeTab === 'customer' ? <MenuSection /> : <AdminDashboard />}
+      {/* Dynamic View Router */}
+      {activeTab === 'profile' && <UserProfile />}
+      {activeTab === 'campaign' && <CampaignLanding />}
+      {activeTab === 'customer' && <MenuSection />}
+      {activeTab === 'admin' && <AdminDashboard />}
 
       {/* Modals & Overlays */}
       <LocationModal />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { ShoppingBag, MapPin, ChefHat, Store, Smartphone } from 'lucide-react';
+import { ShoppingBag, MapPin, ChefHat, Store, Smartphone, Gift, User, Sparkles } from 'lucide-react';
 
 export const Header = () => {
   const {
@@ -11,14 +11,18 @@ export const Header = () => {
     cartItemCount,
     setIsCartOpen,
     activeTab,
-    requestProtectedView
+    setActiveTab,
+    requestProtectedView,
+    userProfile,
+    loyaltyStampsCount,
+    unlockedFreeDishes
   } = useApp();
 
   return (
     <header className="main-header">
       <div className="header-inner">
         {/* Brand Logo (Left) */}
-        <button className="brand-logo-btn" onClick={() => requestProtectedView('customer')}>
+        <button className="brand-logo-btn" onClick={() => setActiveTab('customer')}>
           <img src="/logo.png" alt="Desi Eats Logo" className="brand-logo-img" />
         </button>
 
@@ -55,6 +59,35 @@ export const Header = () => {
 
         {/* Header Right Actions */}
         <div className="header-right">
+          {/* 5-for-1 Loyalty Campaign Promotional Button */}
+          <button
+            className={`header-campaign-btn ${activeTab === 'campaign' ? 'active' : ''}`}
+            onClick={() => setActiveTab('campaign')}
+            title="5 Orders = 1 Free Dish below ₹200 Campaign"
+          >
+            <Gift size={16} color="#d97706" />
+            <span className="desktop-only">5-for-1 Free Dish</span>
+            <span className="mobile-only">🎁 Free Dish</span>
+            {unlockedFreeDishes > 0 && (
+              <span className="header-pulse-tag">1 FREE</span>
+            )}
+          </button>
+
+          {/* Customer User Profile Button */}
+          <button
+            className={`header-profile-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+            title="My Profile & Loyalty Stamps"
+          >
+            <User size={16} />
+            <span className="desktop-only">
+              {userProfile ? userProfile.name.split(' ')[0] : 'Profile'}
+            </span>
+            <span className="profile-stamp-mini-badge" title={`${loyaltyStampsCount}/5 stamps collected`}>
+              {unlockedFreeDishes > 0 ? '🎁' : `${loyaltyStampsCount}/5`}
+            </span>
+          </button>
+
           {/* Desktop Only: Protected Kitchen App Launcher */}
           <button
             className="view-toggle-btn desktop-only"
@@ -62,7 +95,7 @@ export const Header = () => {
             onClick={() => requestProtectedView(activeTab === 'kitchen' ? 'customer' : 'kitchen')}
           >
             <Smartphone size={16} />
-            <span>{activeTab === 'kitchen' ? 'Storefront' : '📱 Kitchen App'}</span>
+            <span>{activeTab === 'kitchen' ? 'Storefront' : '📱 Kitchen'}</span>
           </button>
 
           {/* Desktop Only: Protected Kitchen Admin Portal Switcher */}
@@ -71,7 +104,7 @@ export const Header = () => {
             onClick={() => requestProtectedView(activeTab === 'admin' ? 'customer' : 'admin')}
           >
             <ChefHat size={16} />
-            <span>{activeTab === 'admin' ? 'Customer View' : 'Kitchen Admin'}</span>
+            <span>{activeTab === 'admin' ? 'Customer' : 'Admin'}</span>
           </button>
 
           {/* My Plate Cart Drawer Button (Visible on both Mobile & Desktop - Right side) */}

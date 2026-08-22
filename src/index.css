@@ -1735,3 +1735,788 @@ body {
     width: 100%;
   }
 }
+
+/* =========================================================================
+   PROFILE & LOYALTY CAMPAIGN STYLES
+   ========================================================================= */
+
+/* Header Navigation Additions */
+.header-campaign-btn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde047;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.header-campaign-btn:hover, .header-campaign-btn.active {
+  background: #fde047;
+  border-color: #eab308;
+  transform: translateY(-1px);
+}
+
+.header-pulse-tag {
+  background: #10b981;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+.header-profile-btn {
+  background: white;
+  color: var(--primary-green);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.header-profile-btn:hover, .header-profile-btn.active {
+  background: var(--accent-gold-light);
+  border-color: var(--accent-gold);
+}
+
+.profile-stamp-mini-badge {
+  background: var(--primary-green);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* User Profile Page Layout */
+.profile-page-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  width: 100%;
+}
+
+.profile-hero-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-avatar-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(22, 67, 36, 0.2);
+}
+
+.desi-club-badge {
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #fde68a;
+}
+
+/* Loyalty Campaign Card */
+.loyalty-campaign-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--accent-gold);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.loyalty-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.loyalty-tag-pill {
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.reward-ready-pill {
+  background: #10b981;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.loyalty-stat-badge {
+  background: var(--accent-gold-light);
+  border: 1px solid rgba(229, 160, 36, 0.4);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+/* Stamp Slots Grid */
+.stamps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (max-width: 600px) {
+  .stamps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stamp-slot {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 16px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.stamp-slot.stamp-completed {
+  background: #ecfdf5;
+  border-color: #10b981;
+  border-style: solid;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+}
+
+.stamp-slot.stamp-gift-slot {
+  background: #fff7ed;
+  border-color: #f97316;
+  border-style: solid;
+}
+
+.stamp-slot.stamp-gift-slot.stamp-completed {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.stamp-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stamp-slot-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.stamp-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.stamp-earned-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #059669;
+  letter-spacing: 0.5px;
+}
+
+/* Progress Track */
+.progress-track {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Unlocked Reward Banner */
+.unlocked-reward-banner {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.claim-reward-btn {
+  background: #164324;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22, 67, 36, 0.25);
+  transition: all 0.2s ease;
+}
+
+.claim-reward-btn:hover {
+  background: #10b981;
+}
+
+.loyalty-stats-footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--primary-green);
+}
+
+.stat-txt {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* User Order History Card */
+.user-order-history-card {
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.user-order-history-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md);
+}
+
+.order-status-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.status-received { background: #fef3c7; color: #b45309; }
+.status-preparing { background: #dbeafe; color: #1d4ed8; }
+.status-ready { background: #ecfdf5; color: #047857; }
+.status-completed { background: #f1f5f9; color: #475569; }
+.status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+.qualifying-stamp-pill {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde047;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* =========================================================================
+   CAMPAIGN PROMOTIONAL LANDING PAGE STYLES
+   ========================================================================= */
+.campaign-page-wrapper {
+  background: var(--bg-ivory);
+  width: 100%;
+}
+
+.campaign-hero {
+  background: linear-gradient(135deg, #164324 0%, #0d2816 100%);
+  color: white;
+  padding: 60px 20px 50px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 4px solid var(--accent-gold);
+}
+
+.campaign-hero-inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.campaign-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(229, 160, 36, 0.15);
+  border: 1px solid var(--accent-gold);
+  color: #fde68a;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.campaign-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: white;
+  margin-bottom: 18px;
+  font-family: var(--font-brand);
+}
+
+.campaign-title .highlight-text {
+  color: var(--accent-gold);
+  text-shadow: 0 2px 10px rgba(229, 160, 36, 0.3);
+}
+
+.campaign-subtitle {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  max-width: 700px;
+  margin: 0 auto 30px;
+}
+
+.campaign-cta-group {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.campaign-primary-btn {
+  background: var(--accent-gold);
+  color: #164324;
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(229, 160, 36, 0.4);
+  transition: all 0.2s ease;
+}
+
+.campaign-primary-btn:hover {
+  transform: translateY(-2px);
+  background: #f59e0b;
+}
+
+.campaign-secondary-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 14px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.campaign-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.live-user-status-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(229, 160, 36, 0.3);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  text-align: left;
+}
+
+/* Campaign Sections */
+.campaign-section {
+  padding: 60px 20px;
+}
+
+.campaign-container {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.section-heading-center {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 40px;
+}
+
+.section-subtag {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--terracotta);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.section-main-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-green);
+  font-family: var(--font-brand);
+  margin-bottom: 10px;
+}
+
+.section-main-desc {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Steps Grid */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.step-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 30px 24px;
+  position: relative;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-card.highlight-step {
+  border: 2px solid var(--accent-gold);
+  background: linear-gradient(180deg, #ffffff 0%, #fffbf2 100%);
+  box-shadow: var(--shadow-md);
+}
+
+.step-number-badge {
+  position: absolute;
+  top: -14px;
+  left: 24px;
+  background: var(--primary-green);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.step-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.step-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.step-desc {
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Stamp Visualizer Box */
+.stamp-visualizer-box {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 32px 24px;
+  box-shadow: var(--shadow-md);
+}
+
+/* Eligible Dishes Grid */
+.eligible-dishes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.eligible-dish-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.eligible-dish-card:hover {
+  border-color: var(--accent-gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.price-tag-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.old-price {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-weight: 600;
+}
+
+.free-price {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #10b981;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.dish-order-cta {
+  width: 100%;
+  background: #f8fafc;
+  color: var(--primary-green);
+  border: 1px solid #cbd5e1;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dish-order-cta:hover {
+  background: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
+}
+
+/* Perks Grid */
+.perks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .perks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.perk-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+}
+
+.perk-card h4 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 12px 0 8px;
+  color: var(--accent-gold);
+}
+
+.perk-card p {
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+/* FAQs */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.faq-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: white;
+}
+
+.faq-question-btn {
+  width: 100%;
+  padding: 16px 20px;
+  text-align: left;
+  background: white;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.faq-answer-body {
+  padding: 0 20px 16px;
+  font-size: 0.88rem;
+  color: #4b5563;
+  line-height: 1.5;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+/* WhatsApp Share Strip */
+.whatsapp-share-strip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.whatsapp-btn {
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+/* Sticky Campaign Footer */
+.campaign-sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 90;
+  background: #164324;
+  color: white;
+  padding: 14px 20px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+  border-top: 2px solid var(--accent-gold);
+}
+
+.campaign-footer-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-offer-badge {
+  background: var(--accent-gold);
+  color: #164324;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.footer-offer-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.footer-order-btn {
+  background: var(--accent-gold);
+  color: #164324;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+

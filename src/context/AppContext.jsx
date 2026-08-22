@@ -72,6 +72,16 @@ export const AppProvider = ({ children }) => {
   });
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
+  // User Profile & Customer State
+  const [userProfile, setUserProfile] = useState(() => {
+    const saved = localStorage.getItem('de_user_profile');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isAuthProfileModalOpen, setIsAuthProfileModalOpen] = useState(false);
+
+  // Free Dish Loyalty Reward Applied in Cart
+  const [isFreeDishRewardApplied, setIsFreeDishRewardApplied] = useState(false);
+
   // Cart / "My Plate" Management
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem('de_cart');
@@ -79,11 +89,13 @@ export const AppProvider = ({ children }) => {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // View switch: 'customer', 'admin', or 'kitchen'
+  // View switch: 'customer', 'admin', 'kitchen', 'profile', or 'campaign'
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'kitchen' || window.location.hash === '#kitchen') return 'kitchen';
     if (params.get('view') === 'admin' || window.location.hash === '#admin') return 'admin';
+    if (params.get('view') === 'profile' || window.location.hash === '#profile') return 'profile';
+    if (params.get('view') === 'campaign' || window.location.hash === '#campaign' || window.location.hash === '#rewards') return 'campaign';
     return 'customer';
   });
 
@@ -105,6 +117,81 @@ export const AppProvider = ({ children }) => {
 
   // Notification Toast message
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Customer Profile Management Methods
+  const loginCustomer = (profileData) => {
+    const profile = {
+      name: profileData.name || 'Desi Foodie',
+      phone: profileData.phone || '',
+      email: profileData.email || '',
+      address: profileData.address || '',
+      pincode: profileData.pincode || selectedPincode || '700135',
+      claimedRewardsCount: profileData.claimedRewardsCount || Number(localStorage.getItem('de_claimed_rewards') || 0),
+      joinedAt: profileData.joinedAt || new Date().toISOString()
+    };
+    setUserProfile(profile);
+    localStorage.setItem('de_user_profile', JSON.stringify(profile));
+    if (profile.phone) {
+      localStorage.setItem('de_saved_phone', profile.phone);
+      saveFirestoreDoc('users', profile.phone, profile);
+    }
+    showToast(`Welcome, ${profile.name}! 🍛`);
+  };
+
+  const updateCustomerProfile = (updatedData) => {
+    setUserProfile(prev => {
+      const merged = { ...prev, ...updatedData };
+      localStorage.setItem('de_user_profile', JSON.stringify(merged));
+      if (merged.phone) {
+        localStorage.setItem('de_saved_phone', merged.phone);
+        saveFirestoreDoc('users', merged.phone, merged);
+      }
+      return merged;
+    });
+    showToast('Profile updated successfully!');
+  };
+
+  const logoutCustomer = () => {
+    setUserProfile(null);
+    localStorage.removeItem('de_user_profile');
+    setIsFreeDishRewardApplied(false);
+    showToast('Logged out of customer profile');
+  };
+
+  // Loyalty Campaign Calculations: 5 Orders (>= ₹200 each) = 1 FREE Dish below ₹200
+  const activeCustomerPhone = userProfile?.phone || localStorage.getItem('de_saved_phone') || '';
+  const customerOrders = orders.filter(o => activeCustomerPhone ? o.customerPhone === activeCustomerPhone : true);
+  const qualifyingOrders = customerOrders.filter(o => Number(o.totalAmount || o.subtotal) >= 200);
+  const loyaltyStampsCount = qualifyingOrders.length % 5;
+  const totalEarnedFreeDishes = Math.floor(qualifyingOrders.length / 5);
+  const claimedFreeDishes = userProfile?.claimedRewardsCount ?? Number(localStorage.getItem('de_claimed_rewards') || 0);
+  const unlockedFreeDishes = Math.max(0, totalEarnedFreeDishes - claimedFreeDishes);
+
+  // Free Dish Reward Discount Calculation in Cart
+  // Applies 100% free price on the highest priced eligible item in cart with price < 200 (up to ₹199)
+  const eligibleFreeDishItem = isFreeDishRewardApplied && unlockedFreeDishes > 0
+    ? cart.find(ci => ci.unitPrice < 200) || null
+    : null;
+  const freeDishRewardDiscount = eligibleFreeDishItem ? eligibleFreeDishItem.unitPrice : 0;
+
+  const applyFreeDishReward = () => {
+    if (unlockedFreeDishes <= 0) {
+      showToast('No free dish rewards available yet! Complete 5 orders of ₹200+');
+      return false;
+    }
+    const hasEligibleItem = cart.some(ci => ci.unitPrice < 200);
+    if (!hasEligibleItem) {
+      showToast('Add any dish or combo under ₹200 to your plate to apply your free reward!');
+      return false;
+    }
+    setIsFreeDishRewardApplied(true);
+    showToast('🎉 Free Dish Reward applied to your plate!');
+    return true;
+  };
+
+  const removeFreeDishReward = () => {
+    setIsFreeDishRewardApplied(false);
+  };
 
   // Firebase Real-time Subscribers
   useEffect(() => {
@@ -405,6 +492,7 @@ export const AppProvider = ({ children }) => {
   const clearCart = () => {
     setCart([]);
     setAppliedCoupon(null);
+    setIsFreeDishRewardApplied(false);
   };
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
@@ -441,10 +529,11 @@ export const AppProvider = ({ children }) => {
 
   const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
 
-  // Place Order (Writes to Firestore Database + Local State)
+  // Place Order (Writes to Firestore Database + Local State + Loyalty Campaign Auto-Save)
   const placeOrder = (customerDetails) => {
     const deliveryFee = orderMode === 'delivery' ? 30 : 0;
-    const grandTotal = Math.max(0, cartSubtotal + deliveryFee - couponDiscount);
+    const totalDiscount = couponDiscount + freeDishRewardDiscount;
+    const grandTotal = Math.max(0, cartSubtotal + deliveryFee - totalDiscount);
 
     const newOrder = {
       id: `DE-${Date.now().toString().slice(-6)}`,
@@ -457,8 +546,9 @@ export const AppProvider = ({ children }) => {
       paymentMethod: customerDetails.paymentMethod || 'cash',
       items: [...cart],
       subtotal: cartSubtotal,
-      discount: couponDiscount,
+      discount: totalDiscount,
       appliedCouponCode: appliedCoupon ? appliedCoupon.code : null,
+      freeDishRewardUsed: isFreeDishRewardApplied,
       deliveryFee,
       totalAmount: grandTotal,
       status: 'RECEIVED',
@@ -467,11 +557,33 @@ export const AppProvider = ({ children }) => {
       instructions: customerDetails.instructions || '',
     };
 
+    // Auto-update customer profile / saved details for next time & stamp tracking
+    if (customerDetails.phone) {
+      localStorage.setItem('de_saved_phone', customerDetails.phone);
+      const newClaimedCount = (userProfile?.claimedRewardsCount || Number(localStorage.getItem('de_claimed_rewards') || 0)) + (isFreeDishRewardApplied ? 1 : 0);
+      if (isFreeDishRewardApplied) {
+        localStorage.setItem('de_claimed_rewards', newClaimedCount.toString());
+      }
+      const updatedProf = {
+        name: customerDetails.name || userProfile?.name || 'Desi Foodie',
+        phone: customerDetails.phone,
+        email: customerDetails.email || userProfile?.email || '',
+        address: customerDetails.address || userProfile?.address || '',
+        pincode: selectedPincode || '700135',
+        claimedRewardsCount: newClaimedCount,
+        joinedAt: userProfile?.joinedAt || new Date().toISOString()
+      };
+      setUserProfile(updatedProf);
+      localStorage.setItem('de_user_profile', JSON.stringify(updatedProf));
+      saveFirestoreDoc('users', customerDetails.phone, updatedProf);
+    }
+
     setOrders(prev => [newOrder, ...prev]);
     setActiveOrderId(newOrder.id);
     clearCart();
     setIsCartOpen(false);
     setIsOrderTrackerOpen(true);
+    setIsFreeDishRewardApplied(false);
 
     // Save to Firebase Firestore Database
     saveFirestoreDoc('orders', newOrder.id, newOrder);
@@ -704,6 +816,23 @@ export const AppProvider = ({ children }) => {
       setIsCartOpen,
       activeTab,
       setActiveTab,
+      userProfile,
+      loginCustomer,
+      updateCustomerProfile,
+      logoutCustomer,
+      isAuthProfileModalOpen,
+      setIsAuthProfileModalOpen,
+      customerOrders,
+      qualifyingOrders,
+      loyaltyStampsCount,
+      totalEarnedFreeDishes,
+      claimedFreeDishes,
+      unlockedFreeDishes,
+      isFreeDishRewardApplied,
+      freeDishRewardDiscount,
+      eligibleFreeDishItem,
+      applyFreeDishReward,
+      removeFreeDishReward,
       orders,
       activeOrderId,
       setActiveOrderId,

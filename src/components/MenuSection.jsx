@@ -25,7 +25,8 @@ import {
   ChefHat,
   Smartphone,
   ShieldCheck,
-  Filter
+  Filter,
+  Gift
 } from 'lucide-react';
 
 import { INITIAL_CATEGORIES } from '../data/initialMenu';
@@ -50,7 +51,10 @@ export const MenuSection = () => {
     setIsOrderTrackerOpen,
     orders,
     requestProtectedView,
-    coupons
+    coupons,
+    setActiveTab,
+    loyaltyStampsCount,
+    unlockedFreeDishes
   } = useApp();
 
   const [activeCategory, setActiveCategory] = useState('all');
@@ -221,6 +225,28 @@ export const MenuSection = () => {
 
         {/* 2. SWIGGY DEALS & OFFERS CAROUSEL STRIP */}
         <div className="swiggy-offers-strip">
+          {/* Main 5-for-1 Loyalty Campaign Promo Card */}
+          <div
+            className="swiggy-offer-card campaign-promo-card"
+            onClick={() => setActiveTab('campaign')}
+            style={{ cursor: 'pointer', background: 'linear-gradient(135deg, #164324 0%, #1f5731 100%)', color: 'white', border: '2px solid #e5a024' }}
+          >
+            <div className="offer-icon-box" style={{ background: '#e5a024', color: '#164324' }}>
+              <Gift size={20} color="#164324" />
+            </div>
+            <div>
+              <div className="offer-code-tag" style={{ color: '#fde68a', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span>🎁 5-FOR-1 LOYALTY PASS</span>
+                <span style={{ fontSize: '0.68rem', background: '#e5a024', color: '#164324', padding: '1px 6px', borderRadius: 4, fontWeight: 800 }}>
+                  {loyaltyStampsCount}/5 STAMPS
+                </span>
+              </div>
+              <div className="offer-desc" style={{ color: '#e2e8f0' }}>
+                Order 5 times (₹200+) & get 1 FREE dish below ₹200! <strong>Learn More →</strong>
+              </div>
+            </div>
+          </div>
+
           <div className="swiggy-offer-card">
             <div className="offer-icon-box">
               <Percent size={18} color="#e5a024" />

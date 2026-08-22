@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, UtensilsCrossed, ArrowRight, Bike, Store, Tag, Check, CreditCard, Banknote, QrCode } from 'lucide-react';
+import { X, UtensilsCrossed, ArrowRight, Bike, Store, Tag, Check, CreditCard, Banknote, QrCode, Gift, Sparkles, Award } from 'lucide-react';
 
 export const CartDrawer = () => {
   const {
@@ -17,12 +17,20 @@ export const CartDrawer = () => {
     applyCouponCode,
     removeCoupon,
     couponDiscount,
-    placeOrder
+    placeOrder,
+    userProfile,
+    loyaltyStampsCount,
+    unlockedFreeDishes,
+    isFreeDishRewardApplied,
+    freeDishRewardDiscount,
+    eligibleFreeDishItem,
+    applyFreeDishReward,
+    removeFreeDishReward
   } = useApp();
 
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [customerName, setCustomerName] = useState(userProfile?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(userProfile?.phone || '');
+  const [address, setAddress] = useState(userProfile?.address || '');
   const [tableNo, setTableNo] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'upi_qr'
   const [couponInput, setCouponInput] = useState('');
@@ -30,10 +38,22 @@ export const CartDrawer = () => {
   const [instructions, setInstructions] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Synchronize prefill if userProfile changes
+  useEffect(() => {
+    if (userProfile) {
+      if (!customerName && userProfile.name) setCustomerName(userProfile.name);
+      if (!customerPhone && userProfile.phone) setCustomerPhone(userProfile.phone);
+      if (!address && userProfile.address) setAddress(userProfile.address);
+    }
+  }, [userProfile]);
+
   if (!isCartOpen) return null;
 
   const deliveryFee = orderMode === 'delivery' ? 30 : 0;
-  const grandTotal = Math.max(0, cartSubtotal + deliveryFee - couponDiscount);
+  const grandTotal = Math.max(0, cartSubtotal + deliveryFee - couponDiscount - freeDishRewardDiscount);
+
+  const isQualifyingOrder = cartSubtotal >= 200;
+  const amountNeededForStamp = Math.max(0, 200 - cartSubtotal);
 
   const handleApplyCoupon = (e) => {
     e.preventDefault();
@@ -142,8 +162,117 @@ export const CartDrawer = () => {
                 </div>
               ))}
 
+              {/* Loyalty Campaign Stamp Tracker in Cart */}
+              <div style={{
+                marginTop: 14,
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: isQualifyingOrder ? '#ecfdf5' : '#fefce8',
+                border: isQualifyingOrder ? '1px solid #10b981' : '1px solid #fef08a',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10
+              }}>
+                <div style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: isQualifyingOrder ? '#10b981' : '#fef3c7',
+                  color: isQualifyingOrder ? '#fff' : '#b45309',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Award size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  {isQualifyingOrder ? (
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#065f46' }}>
+                        ⭐ +1 Loyalty Stamp Earned!
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#047857' }}>
+                        Order is ₹200+. You will have <strong>{loyaltyStampsCount + 1}/5 stamps</strong> towards a FREE dish!
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#92400e' }}>
+                        5-for-1 Free Dish Campaign
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#b45309' }}>
+                        Add <strong>₹{amountNeededForStamp}</strong> more to qualify for a Loyalty Stamp towards a FREE dish!
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Unlocked Free Dish Reward Redeem Card */}
+              {unlockedFreeDishes > 0 && (
+                <div style={{
+                  marginTop: 14,
+                  padding: '14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #fef4e2 0%, #fff7ed 100%)',
+                  border: '2px solid #e5a024'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Gift size={18} color="#d85d27" />
+                      <strong style={{ fontSize: '0.88rem', color: '#9a3412' }}>
+                        🎁 Free Dish Reward Available!
+                      </strong>
+                    </div>
+                    <span style={{ fontSize: '0.72rem', background: '#d85d27', color: 'white', padding: '1px 6px', borderRadius: 4, fontWeight: 800 }}>
+                      {unlockedFreeDishes} READY
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#7c2d12', margin: '0 0 10px' }}>
+                    You completed 5 qualifying orders! Claim any dish below ₹200 (like Basanti Pulao + Kosha Chicken) for ₹0.
+                  </p>
+
+                  {isFreeDishRewardApplied ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', padding: '8px 12px', borderRadius: 8, border: '1px solid #10b981' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>
+                        ✓ Free Dish Applied (-₹{freeDishRewardDiscount})
+                      </span>
+                      <button
+                        onClick={removeFreeDishReward}
+                        style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer', fontSize: '0.78rem' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={applyFreeDishReward}
+                      style={{
+                        width: '100%',
+                        background: '#164324',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: 8,
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6
+                      }}
+                    >
+                      <Gift size={16} color="#e5a024" />
+                      <span>Apply Free Dish to this Order</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Promo Coupon Section */}
-              <div style={{ marginTop: 20, padding: 14, background: '#fefce8', borderRadius: 12, border: '1px solid #fef08a' }}>
+              <div style={{ marginTop: 14, padding: 14, background: '#fefce8', borderRadius: 12, border: '1px solid #fef08a' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <Tag size={16} color="#d97706" />
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#92400e' }}>
@@ -316,6 +445,16 @@ export const CartDrawer = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#15803d', fontWeight: 700, marginBottom: 4 }}>
                   <span>Coupon Discount ({appliedCoupon.code})</span>
                   <span>-₹{couponDiscount}</span>
+                </div>
+              )}
+
+              {freeDishRewardDiscount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#047857', fontWeight: 800, marginBottom: 4 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Gift size={13} color="#047857" />
+                    <span>Free Dish Reward ({eligibleFreeDishItem?.item.name})</span>
+                  </span>
+                  <span>-₹{freeDishRewardDiscount} (FREE)</span>
                 </div>
               )}
 
