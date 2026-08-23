@@ -57,12 +57,29 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
   }
 };
 
+// Clean undefined values for Firestore serialization
+const sanitizeForFirestore = (obj) => {
+  if (obj === undefined) return null;
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  const clean = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      clean[key] = sanitizeForFirestore(value);
+    } else {
+      clean[key] = null;
+    }
+  }
+  return clean;
+};
+
 // Save / Merge Document
 export const saveFirestoreDoc = async (collectionName, docId, data) => {
   if (!db) return false;
   try {
     const docRef = doc(db, collectionName, docId);
-    await setDoc(docRef, data, { merge: true });
+    const sanitized = sanitizeForFirestore(data);
+    await setDoc(docRef, sanitized, { merge: true });
     return true;
   } catch (err) {
     console.warn(`Firestore write error [${collectionName}/${docId}]:`, err);
@@ -75,7 +92,8 @@ export const addFirestoreDoc = async (collectionName, data) => {
   if (!db) return null;
   try {
     const colRef = collection(db, collectionName);
-    const docRef = await addDoc(colRef, data);
+    const sanitized = sanitizeForFirestore(data);
+    const docRef = await addDoc(colRef, sanitized);
     return docRef.id;
   } catch (err) {
     console.warn(`Firestore add error [${collectionName}]:`, err);

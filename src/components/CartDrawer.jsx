@@ -435,7 +435,7 @@ export const CartDrawer = () => {
             </div>
 
             {/* Footer Summary & Place Order */}
-            <div style={{ padding: 20, borderTop: '1px solid #e5e7eb', background: 'white' }}>
+            <div className="cart-footer-checkout">
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', marginBottom: 4 }}>
                 <span>Subtotal</span>
                 <span>₹{cartSubtotal}</span>

@@ -240,7 +240,9 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const unsubOrders = subscribeToCollection('orders', (fsOrders) => {
       if (fsOrders && fsOrders.length > 0) {
-        setOrders(fsOrders);
+        const sorted = [...fsOrders].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        setOrders(sorted);
+        localStorage.setItem('de_orders', JSON.stringify(sorted));
       }
     });
 
@@ -636,35 +638,42 @@ export const AppProvider = ({ children }) => {
     return newOrder;
   };
 
-  // Admin Order Actions (Syncs to Firestore Database)
-  const updateOrderStatus = (orderId, newStatus, prepMinutes = null) => {
+  // Admin Order Actions (Syncs to Firestore Database & Local Storage)
+  const updateOrderStatus = async (orderId, newStatus, prepMinutes = null) => {
     let updatedObj = null;
 
-    setOrders(prev => prev.map(order => {
-      if (order.id === orderId) {
-        const updated = { ...order, status: newStatus };
-        if (prepMinutes !== null) {
-          updated.prepTimeMinutes = prepMinutes;
-          const target = new Date();
-          target.setMinutes(target.getMinutes() + parseInt(prepMinutes, 10));
-          updated.readyAtTime = target.toISOString();
+    setOrders(prev => {
+      const updatedList = prev.map(order => {
+        if (order.id === orderId) {
+          const updated = { ...order, status: newStatus };
+          if (prepMinutes !== null) {
+            updated.prepTimeMinutes = prepMinutes;
+            const target = new Date();
+            target.setMinutes(target.getMinutes() + parseInt(prepMinutes, 10));
+            updated.readyAtTime = target.toISOString();
+          }
+          updatedObj = updated;
+          return updated;
         }
-        updatedObj = updated;
-        broadcastSync('UPDATE_ORDER_STATUS', updated);
-        return updated;
-      }
-      return order;
-    }));
+        return order;
+      });
+      localStorage.setItem('de_orders', JSON.stringify(updatedList));
+      return updatedList;
+    });
 
     if (updatedObj) {
-      saveFirestoreDoc('orders', orderId, updatedObj);
+      broadcastSync('UPDATE_ORDER_STATUS', updatedObj);
+      await saveFirestoreDoc('orders', orderId, updatedObj);
     }
 
     // Stop continuous ringer if all RECEIVED orders accepted
-    const remainingReceived = orders.filter(o => o.id !== orderId && o.status === 'RECEIVED');
-    if (remainingReceived.length === 0) {
-      stopRingerLoop();
-    }
+    setOrders(current => {
+      const remainingReceived = current.filter(o => o.id !== orderId && o.status === 'RECEIVED');
+      if (remainingReceived.length === 0) {
+        stopRingerLoop();
+      }
+      return current;
+    });
 
     showToast(`Order #${orderId.slice(-4)} status updated to ${newStatus}`);
   };

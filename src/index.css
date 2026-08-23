@@ -1535,9 +1535,9 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 200;
+  z-index: 8000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1578,9 +1578,9 @@ body {
 .cart-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
-  z-index: 250;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9000;
   display: flex;
   justify-content: flex-end;
 }
@@ -1591,8 +1591,10 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.25);
   animation: drawerIn 0.3s ease-out;
+  position: relative;
+  z-index: 9001;
 }
 @keyframes drawerIn {
   from { transform: translateX(100%); }
@@ -1603,6 +1605,15 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+}
+
+.cart-footer-checkout {
+  padding: 16px 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
 }
 .cart-item-row {
   display: flex;
