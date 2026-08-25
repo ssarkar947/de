@@ -30,6 +30,7 @@ import {
   Gift,
   Award
 } from 'lucide-react';
+import { openWhatsApp, generateCustomerStatusMessage, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
 
 export const AdminDashboard = () => {
   const {
@@ -435,7 +436,15 @@ export const AdminDashboard = () => {
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => openWhatsApp(order.customerPhone, generateOrderConfirmationMessage(order))}
+                          style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '6px 10px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                          title="Send Order Confirmation on WhatsApp"
+                        >
+                          <MessageSquare size={14} color="#25d366" /> WhatsApp
+                        </button>
                         <button
                           onClick={() => handlePrintKOT(order)}
                           style={{ background: '#f1f5f9', border: 'none', padding: '6px 10px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
@@ -722,13 +731,23 @@ export const AdminDashboard = () => {
                       </td>
 
                       <td style={{ padding: 12, textAlign: 'center' }}>
-                        <button
-                          onClick={() => handlePrintKOT(order)}
-                          style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                          title="Print Receipt"
-                        >
-                          <Printer size={13} /> Print
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button
+                            type="button"
+                            onClick={() => openWhatsApp(order.customerPhone, generateCustomerStatusMessage(order, 'COMPLETED'))}
+                            style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '4px 8px', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                            title="Send WhatsApp Receipt"
+                          >
+                            <MessageSquare size={13} color="#25d366" /> WhatsApp
+                          </button>
+                          <button
+                            onClick={() => handlePrintKOT(order)}
+                            style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            title="Print Receipt"
+                          >
+                            <Printer size={13} /> Print
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

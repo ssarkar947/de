@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Clock, CheckCircle, Flame, Bike, Store, Bell, X, Sparkles, Banknote, QrCode } from 'lucide-react';
+import { Clock, CheckCircle, Flame, Bike, Store, Bell, X, Sparkles, Banknote, QrCode, MessageSquare, Share2, Phone } from 'lucide-react';
+import { openWhatsApp, generateOrderConfirmationMessage, RESTAURANT_PHONE } from '../utils/whatsappHelper';
 
 export const OrderTracker = () => {
   const { orders, activeOrderId, isOrderTrackerOpen, setIsOrderTrackerOpen } = useApp();
@@ -200,6 +201,73 @@ export const OrderTracker = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', fontWeight: 800, color: '#1b4332', paddingTop: 8, borderTop: '1px dashed #cbd5e1' }}>
               <span>Total Payable</span>
               <span>₹{order.totalAmount}</span>
+            </div>
+          </div>
+
+          {/* WhatsApp Order Confirmation Strip */}
+          <div style={{
+            marginTop: 16,
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+            border: '1px solid #86efac',
+            borderRadius: 14,
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#25d366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageSquare size={16} />
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.88rem', color: '#166534', display: 'block' }}>WhatsApp Order Confirmation</strong>
+                <span style={{ fontSize: '0.75rem', color: '#15803d' }}>Save your receipt or contact Desi Eats kitchen</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
+              <button
+                type="button"
+                onClick={() => openWhatsApp(order.customerPhone, generateOrderConfirmationMessage(order))}
+                style={{
+                  background: '#25d366',
+                  color: 'white',
+                  border: 'none',
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)'
+                }}
+              >
+                <Share2 size={13} /> Send to My WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openWhatsApp(RESTAURANT_PHONE, `Hello Desi Eats Kitchen! I have placed Order #${order.id} (₹${order.totalAmount}). Please confirm my order.`)}
+                style={{
+                  background: '#164324',
+                  color: 'white',
+                  border: 'none',
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6
+                }}
+              >
+                <Phone size={13} /> Chat with Kitchen
+              </button>
             </div>
           </div>
         </div>

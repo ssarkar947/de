@@ -12,10 +12,11 @@ import {
   MapPin,
   Flame,
   ArrowLeft,
-  Download,
   Smartphone,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
+import { openWhatsApp, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
 
 export const KitchenApp = () => {
   const {
@@ -314,12 +315,22 @@ export const KitchenApp = () => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handlePrintKOT(order)}
-                      style={{ background: '#334155', border: 'none', color: '#f8fafc', padding: '6px 12px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      <Printer size={14} /> KOT
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => openWhatsApp(order.customerPhone, generateOrderConfirmationMessage(order))}
+                        style={{ background: '#166534', border: '1px solid #22c55e', color: '#f8fafc', padding: '6px 10px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                        title="Send Order WhatsApp Confirmation"
+                      >
+                        <MessageSquare size={14} color="#4ade80" /> WhatsApp
+                      </button>
+                      <button
+                        onClick={() => handlePrintKOT(order)}
+                        style={{ background: '#334155', border: 'none', color: '#f8fafc', padding: '6px 12px', borderRadius: 8, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        <Printer size={14} /> KOT
+                      </button>
+                    </div>
                   </div>
 
                   {/* Customer Info */}
