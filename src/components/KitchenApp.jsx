@@ -309,9 +309,9 @@ export const KitchenApp = () => {
                           {order.orderMode.toUpperCase()}
                         </span>
                       </div>
-                      <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: 2 }}>
-                        {new Date(order.createdAt).toLocaleTimeString()}
-                      </p>
+                      <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: 3 }}>
+                        📅 {order.orderDate || new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • ⏰ {order.orderTime || new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
 
                     <button

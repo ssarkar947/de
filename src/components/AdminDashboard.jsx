@@ -430,9 +430,9 @@ export const AdminDashboard = () => {
                             {order.orderMode}
                           </span>
                         </div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                          {new Date(order.createdAt).toLocaleTimeString()}
-                        </span>
+                        <div style={{ fontSize: '0.8rem', color: '#4b5563', fontWeight: 600, marginTop: 2 }}>
+                          📅 {order.orderDate || new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • ⏰ {order.orderTime || new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
 
                       <div style={{ display: 'flex', gap: 6 }}>

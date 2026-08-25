@@ -240,9 +240,37 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const unsubOrders = subscribeToCollection('orders', (fsOrders) => {
       if (fsOrders && fsOrders.length > 0) {
-        const sorted = [...fsOrders].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        setOrders(sorted);
-        localStorage.setItem('de_orders', JSON.stringify(sorted));
+        setOrders(prev => {
+          const orderMap = new Map();
+          // Seed with existing state
+          (prev || []).forEach(o => {
+            if (o && o.id) orderMap.set(o.id, o);
+          });
+          // Merge incoming from Firestore
+          fsOrders.forEach(inc => {
+            if (!inc || !inc.id) return;
+            const existing = orderMap.get(inc.id);
+            if (!existing) {
+              orderMap.set(inc.id, inc);
+            } else {
+              // If incoming has COMPLETED or newer status, accept it
+              const incTime = new Date(inc.updatedAt || inc.completedAt || inc.createdAt || 0).getTime();
+              const existTime = new Date(existing.updatedAt || existing.completedAt || existing.createdAt || 0).getTime();
+              if (inc.status === 'COMPLETED' || incTime >= existTime) {
+                orderMap.set(inc.id, { ...existing, ...inc });
+              } else if (existing.status === 'COMPLETED') {
+                // If local order was already marked COMPLETED, preserve COMPLETED and fix Firestore!
+                orderMap.set(inc.id, existing);
+                saveFirestoreDoc('orders', inc.id, existing);
+              } else {
+                orderMap.set(inc.id, { ...existing, ...inc });
+              }
+            }
+          });
+          const merged = Array.from(orderMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          localStorage.setItem('de_orders', JSON.stringify(merged));
+          return merged;
+        });
       }
     });
 
@@ -580,9 +608,25 @@ export const AppProvider = ({ children }) => {
     const totalDiscount = couponDiscount + freeDishRewardDiscount;
     const grandTotal = Math.max(0, cartSubtotal + deliveryFee - totalDiscount);
 
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    const formattedTime = now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
     const newOrder = {
       id: `DE-${Date.now().toString().slice(-6)}`,
-      createdAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
+      orderDate: formattedDate,
+      orderTime: formattedTime,
+      formattedDateTime: `${formattedDate}, ${formattedTime}`,
+      updatedAt: now.toISOString(),
       orderMode,
       pincode: orderMode === 'delivery' ? selectedPincode : 'TAKEAWAY',
       customerName: customerDetails.name,
@@ -604,23 +648,28 @@ export const AppProvider = ({ children }) => {
 
     // Auto-update customer profile / saved details for next time & stamp tracking
     if (customerDetails.phone) {
-      localStorage.setItem('de_saved_phone', customerDetails.phone);
+      const cleanPhone = customerDetails.phone.replace(/\D/g, '');
+      localStorage.setItem('de_saved_phone', cleanPhone);
       const newClaimedCount = (userProfile?.claimedRewardsCount || Number(localStorage.getItem('de_claimed_rewards') || 0)) + (isFreeDishRewardApplied ? 1 : 0);
       if (isFreeDishRewardApplied) {
         localStorage.setItem('de_claimed_rewards', newClaimedCount.toString());
       }
       const updatedProf = {
         name: customerDetails.name || userProfile?.name || 'Desi Foodie',
-        phone: customerDetails.phone,
+        phone: cleanPhone,
         email: customerDetails.email || userProfile?.email || '',
         address: customerDetails.address || userProfile?.address || '',
         pincode: selectedPincode || '700135',
+        lastOrderDate: formattedDate,
+        lastOrderTime: formattedTime,
+        lastOrderId: newOrder.id,
         claimedRewardsCount: newClaimedCount,
-        joinedAt: userProfile?.joinedAt || new Date().toISOString()
+        joinedAt: userProfile?.joinedAt || now.toISOString(),
+        updatedAt: now.toISOString()
       };
       setUserProfile(updatedProf);
       localStorage.setItem('de_user_profile', JSON.stringify(updatedProf));
-      saveFirestoreDoc('users', customerDetails.phone, updatedProf);
+      saveFirestoreDoc('users', cleanPhone, updatedProf);
     }
 
     setOrders(prev => [newOrder, ...prev]);
@@ -641,11 +690,19 @@ export const AppProvider = ({ children }) => {
   // Admin Order Actions (Syncs to Firestore Database & Local Storage)
   const updateOrderStatus = async (orderId, newStatus, prepMinutes = null) => {
     let updatedObj = null;
+    const nowIso = new Date().toISOString();
 
     setOrders(prev => {
       const updatedList = prev.map(order => {
         if (order.id === orderId) {
-          const updated = { ...order, status: newStatus };
+          const updated = {
+            ...order,
+            status: newStatus,
+            updatedAt: nowIso
+          };
+          if (newStatus === 'COMPLETED') {
+            updated.completedAt = nowIso;
+          }
           if (prepMinutes !== null) {
             updated.prepTimeMinutes = prepMinutes;
             const target = new Date();
