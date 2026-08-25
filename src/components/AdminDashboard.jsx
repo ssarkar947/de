@@ -31,6 +31,7 @@ import {
   Award
 } from 'lucide-react';
 import { openWhatsApp, generateCustomerStatusMessage, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
+import { isOrderCompleted, normalizeOrderStatus } from '../utils/orderStatusHelper';
 
 export const AdminDashboard = () => {
   const {
@@ -110,9 +111,9 @@ export const AdminDashboard = () => {
     }, 250);
   };
 
-  const pendingCount = orders.filter(o => o.status === 'RECEIVED').length;
-  const liveOrders = orders.filter(o => o.status !== 'COMPLETED');
-  const completedOrders = orders.filter(o => o.status === 'COMPLETED');
+  const pendingCount = orders.filter(o => !isOrderCompleted(o) && normalizeOrderStatus(o.status) === 'RECEIVED').length;
+  const liveOrders = orders.filter(o => !isOrderCompleted(o));
+  const completedOrders = orders.filter(o => isOrderCompleted(o));
 
   // Filtered Completed Orders
   const filteredCompletedOrders = completedOrders.filter(o => {
@@ -501,7 +502,7 @@ export const AdminDashboard = () => {
 
                     {/* Order Action Controls */}
                     <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px dashed #e5e7eb' }}>
-                      {order.status === 'RECEIVED' && (
+                      {normalizeOrderStatus(order.status) === 'RECEIVED' && (
                         <div>
                           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
                             Set Prep Time & Accept Order:
@@ -528,11 +529,55 @@ export const AdminDashboard = () => {
                               </button>
                             ))}
                           </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
+                            <button
+                              onClick={() => handleAcceptOrder(order.id)}
+                              style={{
+                                background: '#164324',
+                                color: 'white',
+                                border: 'none',
+                                padding: '10px',
+                                borderRadius: 8,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 6,
+                                fontFamily: 'var(--font-brand)'
+                              }}
+                            >
+                              <ChefHat size={18} /> Accept ({currentPrepTime}m)
+                            </button>
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
+                              style={{
+                                background: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                padding: '10px 14px',
+                                borderRadius: 8,
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4
+                              }}
+                              title="Directly Mark Completed"
+                            >
+                              <CheckCircle size={16} /> Complete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {normalizeOrderStatus(order.status) === 'PREPARING' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
                           <button
-                            onClick={() => handleAcceptOrder(order.id)}
+                            onClick={() => updateOrderStatus(order.id, 'READY')}
                             style={{
-                              width: '100%',
-                              background: '#164324',
+                              background: '#3b82f6',
                               color: 'white',
                               border: 'none',
                               padding: '10px',
@@ -546,35 +591,30 @@ export const AdminDashboard = () => {
                               fontFamily: 'var(--font-brand)'
                             }}
                           >
-                            <ChefHat size={18} /> Accept Order ({currentPrepTime} mins)
+                            <CheckCircle2 size={18} /> Mark Ready for Pickup / Dispatch
+                          </button>
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
+                            style={{
+                              background: '#10b981',
+                              color: 'white',
+                              border: 'none',
+                              padding: '10px 14px',
+                              borderRadius: 8,
+                              fontWeight: 700,
+                              fontSize: '0.82rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4
+                            }}
+                          >
+                            <CheckCircle size={16} /> Complete
                           </button>
                         </div>
                       )}
 
-                      {order.status === 'PREPARING' && (
-                        <button
-                          onClick={() => updateOrderStatus(order.id, 'READY')}
-                          style={{
-                            width: '100%',
-                            background: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            padding: '10px',
-                            borderRadius: 8,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            fontFamily: 'var(--font-brand)'
-                          }}
-                        >
-                          <CheckCircle2 size={18} /> Mark Ready for Pickup / Dispatch
-                        </button>
-                      )}
-
-                      {order.status === 'READY' && (
+                      {normalizeOrderStatus(order.status) === 'READY' && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
                           style={{

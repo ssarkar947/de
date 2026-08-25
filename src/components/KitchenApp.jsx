@@ -17,6 +17,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { openWhatsApp, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
+import { isOrderCompleted, normalizeOrderStatus } from '../utils/orderStatusHelper';
 
 export const KitchenApp = () => {
   const {
@@ -35,15 +36,17 @@ export const KitchenApp = () => {
   const [selectedPrepTimes, setSelectedPrepTimes] = useState({});
 
   const filteredOrders = orders.filter(order => {
-    if (selectedFilter === 'RECEIVED') return order.status === 'RECEIVED';
-    if (selectedFilter === 'PREPARING') return order.status === 'PREPARING';
-    if (selectedFilter === 'READY') return order.status === 'READY';
-    return order.status !== 'COMPLETED';
+    if (isOrderCompleted(order)) return false;
+    const norm = normalizeOrderStatus(order.status);
+    if (selectedFilter === 'RECEIVED') return norm === 'RECEIVED';
+    if (selectedFilter === 'PREPARING') return norm === 'PREPARING';
+    if (selectedFilter === 'READY') return norm === 'READY';
+    return true;
   });
 
-  const receivedCount = orders.filter(o => o.status === 'RECEIVED').length;
-  const preparingCount = orders.filter(o => o.status === 'PREPARING').length;
-  const readyCount = orders.filter(o => o.status === 'READY').length;
+  const receivedCount = orders.filter(o => !isOrderCompleted(o) && normalizeOrderStatus(o.status) === 'RECEIVED').length;
+  const preparingCount = orders.filter(o => !isOrderCompleted(o) && normalizeOrderStatus(o.status) === 'PREPARING').length;
+  const readyCount = orders.filter(o => !isOrderCompleted(o) && normalizeOrderStatus(o.status) === 'READY').length;
 
   const handleSetPrepTime = (orderId, mins) => {
     setSelectedPrepTimes(prev => ({ ...prev, [orderId]: mins }));

@@ -7,8 +7,10 @@ import {
   saveFirestoreDoc,
   getFirestoreDoc,
   deleteFirestoreDoc,
+  deleteAllFirestoreDocs,
   isFirebaseConnected
 } from '../firebase';
+import { isOrderCompleted, normalizeOrderStatus, formatOrderDateTime } from '../utils/orderStatusHelper';
 
 const AppContext = createContext();
 
@@ -245,25 +247,33 @@ export const AppProvider = ({ children }) => {
           // Seed with existing state
           (prev || []).forEach(o => {
             if (o && o.id) orderMap.set(o.id, o);
+            if (o && o._docId) orderMap.set(o._docId, o);
           });
           // Merge incoming from Firestore
           fsOrders.forEach(inc => {
             if (!inc || !inc.id) return;
-            const existing = orderMap.get(inc.id);
+            const existing = orderMap.get(inc.id) || (inc._docId ? orderMap.get(inc._docId) : null);
             if (!existing) {
-              orderMap.set(inc.id, inc);
+              orderMap.set(inc.id, { ...inc, status: normalizeOrderStatus(inc.status) });
             } else {
-              // If incoming has COMPLETED or newer status, accept it
-              const incTime = new Date(inc.updatedAt || inc.completedAt || inc.createdAt || 0).getTime();
-              const existTime = new Date(existing.updatedAt || existing.completedAt || existing.createdAt || 0).getTime();
-              if (inc.status === 'COMPLETED' || incTime >= existTime) {
-                orderMap.set(inc.id, { ...existing, ...inc });
-              } else if (existing.status === 'COMPLETED') {
-                // If local order was already marked COMPLETED, preserve COMPLETED and fix Firestore!
-                orderMap.set(inc.id, existing);
-                saveFirestoreDoc('orders', inc.id, existing);
+              const incCompleted = isOrderCompleted(inc);
+              const existCompleted = isOrderCompleted(existing);
+
+              if (existCompleted && !incCompleted) {
+                // Keep completed and push status back to Firestore
+                const preserved = { ...existing, ...inc, status: 'COMPLETED' };
+                orderMap.set(inc.id, preserved);
+                saveFirestoreDoc('orders', inc.id, preserved);
+              } else if (incCompleted) {
+                orderMap.set(inc.id, { ...existing, ...inc, status: 'COMPLETED' });
               } else {
-                orderMap.set(inc.id, { ...existing, ...inc });
+                const incTime = new Date(inc.updatedAt || inc.createdAt || 0).getTime();
+                const existTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+                if (incTime >= existTime) {
+                  orderMap.set(inc.id, { ...existing, ...inc, status: normalizeOrderStatus(inc.status) });
+                } else {
+                  orderMap.set(inc.id, { ...inc, ...existing, status: normalizeOrderStatus(existing.status) });
+                }
               }
             }
           });
@@ -736,19 +746,27 @@ export const AppProvider = ({ children }) => {
   };
 
   // Delete / Clear Orders (Clean up demo or completed orders)
-  const deleteOrder = (orderId) => {
-    setOrders(prev => prev.filter(o => o.id !== orderId));
-    if (activeOrderId === orderId) {
+  const deleteOrder = async (orderId) => {
+    const target = orders.find(o => o.id === orderId || o._docId === orderId);
+    setOrders(prev => prev.filter(o => o.id !== orderId && o._docId !== orderId));
+    if (activeOrderId === orderId || (target && target._docId === activeOrderId)) {
       setActiveOrderId(null);
     }
-    deleteFirestoreDoc('orders', orderId);
+    if (target) {
+      if (target.id) deleteFirestoreDoc('orders', target.id);
+      if (target._docId && target._docId !== target.id) deleteFirestoreDoc('orders', target._docId);
+    } else {
+      deleteFirestoreDoc('orders', orderId);
+    }
     broadcastSync('DELETE_ORDER', orderId);
-    showToast(`Deleted order #${orderId.slice(-4)}`);
+    showToast(`Deleted order #${String(orderId).slice(-4)}`);
   };
 
-  const clearAllOrders = () => {
+  const clearAllOrders = async () => {
+    await deleteAllFirestoreDocs('orders');
     orders.forEach(o => {
-      deleteFirestoreDoc('orders', o.id);
+      if (o.id) deleteFirestoreDoc('orders', o.id);
+      if (o._docId) deleteFirestoreDoc('orders', o._docId);
     });
     setOrders([]);
     setActiveOrderId(null);
@@ -756,7 +774,7 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('de_active_order_id');
     stopRingerLoop();
     broadcastSync('CLEAR_ALL_ORDERS', null);
-    showToast('🧹 All orders cleared from database!');
+    showToast('🧹 All orders permanently cleared from database!');
   };
 
   // Menu Items Management (Syncs to Firestore Database)

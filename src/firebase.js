@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   addDoc,
   updateDoc,
@@ -46,7 +47,14 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
     const q = orderField ? query(colRef, orderBy(orderField, 'desc')) : colRef;
     
     return onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map(d => {
+        const docData = d.data() || {};
+        return {
+          ...docData,
+          _docId: d.id,
+          id: docData.id || d.id
+        };
+      });
       callback(data);
     }, (error) => {
       console.warn(`Firestore collection [${collectionName}] read issue:`, error);
@@ -64,6 +72,7 @@ const sanitizeForFirestore = (obj) => {
   if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
   const clean = {};
   for (const [key, value] of Object.entries(obj)) {
+    if (key.startsWith('_')) continue; // exclude internal metadata like _docId
     if (value !== undefined) {
       clean[key] = sanitizeForFirestore(value);
     } else {
@@ -75,11 +84,21 @@ const sanitizeForFirestore = (obj) => {
 
 // Save / Merge Document
 export const saveFirestoreDoc = async (collectionName, docId, data) => {
-  if (!db) return false;
+  if (!db || !docId) return false;
   try {
-    const docRef = doc(db, collectionName, docId);
+    const cleanId = String(docId).trim();
+    const docRef = doc(db, collectionName, cleanId);
     const sanitized = sanitizeForFirestore(data);
     await setDoc(docRef, sanitized, { merge: true });
+
+    // If document was originally tracked with an alternate Firestore doc ID, update/clean that doc as well
+    if (data && data._docId && String(data._docId).trim() !== cleanId) {
+      try {
+        const altDocRef = doc(db, collectionName, String(data._docId).trim());
+        await setDoc(altDocRef, sanitized, { merge: true });
+      } catch (altErr) {}
+    }
+
     return true;
   } catch (err) {
     console.warn(`Firestore write error [${collectionName}/${docId}]:`, err);
@@ -103,12 +122,13 @@ export const addFirestoreDoc = async (collectionName, data) => {
 
 // Get Single Document
 export const getFirestoreDoc = async (collectionName, docId) => {
-  if (!db) return null;
+  if (!db || !docId) return null;
   try {
-    const docRef = doc(db, collectionName, docId);
+    const cleanId = String(docId).trim();
+    const docRef = doc(db, collectionName, cleanId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      return { id: docSnap.id, _docId: docSnap.id, ...docSnap.data() };
     }
     return null;
   } catch (err) {
@@ -119,13 +139,29 @@ export const getFirestoreDoc = async (collectionName, docId) => {
 
 // Delete Document
 export const deleteFirestoreDoc = async (collectionName, docId) => {
-  if (!db) return false;
+  if (!db || !docId) return false;
   try {
-    const docRef = doc(db, collectionName, docId);
+    const cleanId = String(docId).trim();
+    const docRef = doc(db, collectionName, cleanId);
     await deleteDoc(docRef);
     return true;
   } catch (err) {
     console.warn(`Firestore delete error [${collectionName}/${docId}]:`, err);
+    return false;
+  }
+};
+
+// Delete All Documents in Collection
+export const deleteAllFirestoreDocs = async (collectionName) => {
+  if (!db) return false;
+  try {
+    const colRef = collection(db, collectionName);
+    const snapshot = await getDocs(colRef);
+    const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(deletePromises);
+    return true;
+  } catch (err) {
+    console.warn(`Firestore deleteAllDocs error [${collectionName}]:`, err);
     return false;
   }
 };
