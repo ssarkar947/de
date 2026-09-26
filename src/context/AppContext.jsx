@@ -30,18 +30,53 @@ export const AppProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
-  const MENU_SCHEMA_VERSION = 'v10_official_printed_flyer_2026';
+  const MENU_SCHEMA_VERSION = 'v12_official_flyer_78_dishes_fixed';
+
+  // Force clean migration if version mismatch or if cached menu is outdated
+  const checkAndMigrateMenuCache = () => {
+    try {
+      const savedVersion = localStorage.getItem('de_menu_version');
+      const savedMenu = localStorage.getItem('de_menu');
+      let isMenuValid = false;
+      if (savedMenu) {
+        const parsed = JSON.parse(savedMenu);
+        isMenuValid = Array.isArray(parsed) &&
+          parsed.length >= INITIAL_MENU.length &&
+          parsed.some(i => i.id === 'de-cc-01') &&
+          parsed.some(i => i.id === 'de-mc-01') &&
+          parsed.some(i => i.id === 'de-pc-01') &&
+          parsed.some(i => i.id === 'de-wrap-01');
+      }
+
+      if (savedVersion !== MENU_SCHEMA_VERSION || !isMenuValid) {
+        localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
+        localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
+        localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
+      }
+    } catch (e) {
+      console.warn('Menu cache migration error:', e);
+      localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
+      localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
+      localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
+    }
+  };
+
+  // Run migration check before state initialization
+  checkAndMigrateMenuCache();
 
   // Categories Management
   const [categories, setCategories] = useState(() => {
-    const savedVersion = localStorage.getItem('de_menu_version');
-    if (savedVersion !== MENU_SCHEMA_VERSION) {
-      localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
-      localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
-      return INITIAL_CATEGORIES;
-    }
-    const saved = localStorage.getItem('de_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+    try {
+      const saved = localStorage.getItem('de_categories');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some(c => c.id === 'chicken-combos')) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
+    return INITIAL_CATEGORIES;
   });
 
   // Pincode Management
@@ -58,14 +93,24 @@ export const AppProvider = ({ children }) => {
 
   // Menu Management
   const [menuItems, setMenuItems] = useState(() => {
-    const savedVersion = localStorage.getItem('de_menu_version');
-    if (savedVersion !== MENU_SCHEMA_VERSION) {
-      localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
-      localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
-      return INITIAL_MENU;
-    }
-    const saved = localStorage.getItem('de_menu');
-    return saved ? JSON.parse(saved) : INITIAL_MENU;
+    try {
+      const saved = localStorage.getItem('de_menu');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length >= INITIAL_MENU.length &&
+          parsed.some(i => i.id === 'de-cc-01') &&
+          parsed.some(i => i.id === 'de-mc-01') &&
+          parsed.some(i => i.id === 'de-pc-01') &&
+          parsed.some(i => i.id === 'de-wrap-01')
+        ) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
+    return INITIAL_MENU;
   });
 
   // Coupons Management
@@ -861,11 +906,15 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
     localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
 
-    // Completely purge Firestore menu and categories to ensure no stale items remain
-    await deleteAllFirestoreDocs('menu');
-    await deleteAllFirestoreDocs('categories');
-    INITIAL_MENU.forEach(item => saveFirestoreDoc('menu', item.id, item));
-    INITIAL_CATEGORIES.forEach(cat => saveFirestoreDoc('categories', cat.id, cat));
+    // Purge Firestore menu and categories if accessible
+    try {
+      await deleteAllFirestoreDocs('menu');
+      await deleteAllFirestoreDocs('categories');
+      INITIAL_MENU.forEach(item => saveFirestoreDoc('menu', item.id, item));
+      INITIAL_CATEGORIES.forEach(cat => saveFirestoreDoc('categories', cat.id, cat));
+    } catch (e) {
+      console.warn('Firestore menu reset warning:', e);
+    }
 
     broadcastSync('UPDATE_MENU', INITIAL_MENU);
     broadcastSync('UPDATE_CATEGORIES', INITIAL_CATEGORIES);

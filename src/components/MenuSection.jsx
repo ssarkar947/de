@@ -35,6 +35,77 @@ const categoryIconMap = {
   Utensils, Sparkles, Flame, Soup, Leaf
 };
 
+export const matchesCategory = (itemCategory, targetCategory) => {
+  if (!targetCategory || targetCategory === 'all') return true;
+  if (!itemCategory) return false;
+  if (itemCategory === targetCategory) return true;
+
+  const normItem = itemCategory.toLowerCase().trim();
+  const normTarget = targetCategory.toLowerCase().trim();
+
+  if (normItem === normTarget) return true;
+
+  // Flexible aliasing for Chicken:
+  if (normTarget === 'chicken') {
+    return normItem.includes('chicken');
+  }
+  if (normTarget === 'chicken-combos') {
+    return normItem === 'chicken-combos' || (normItem.includes('chicken') && normItem.includes('combo'));
+  }
+  if (normTarget === 'chicken-dishes') {
+    return normItem === 'chicken-dishes' || (normItem.includes('chicken') && normItem.includes('dish'));
+  }
+
+  // Flexible aliasing for Mutton:
+  if (normTarget === 'mutton') {
+    return normItem.includes('mutton');
+  }
+  if (normTarget === 'mutton-combos') {
+    return normItem === 'mutton-combos' || (normItem.includes('mutton') && normItem.includes('combo'));
+  }
+  if (normTarget === 'mutton-dishes') {
+    return normItem === 'mutton-dishes' || (normItem.includes('mutton') && normItem.includes('dish'));
+  }
+
+  // Flexible aliasing for Paneer:
+  if (normTarget === 'paneer') {
+    return normItem.includes('paneer') || normItem === 'veg-dishes';
+  }
+  if (normTarget === 'paneer-combos') {
+    return normItem === 'paneer-combos' || (normItem.includes('paneer') && normItem.includes('combo'));
+  }
+  if (normTarget === 'veg-dishes' || normTarget === 'paneer-dishes') {
+    return normItem === 'veg-dishes' || normItem === 'paneer-dishes' || (normItem.includes('paneer') && normItem.includes('dish'));
+  }
+
+  // Flexible aliasing for Wraps:
+  if (normTarget === 'wraps' || normTarget === 'wrap' || normTarget === 'rolls-wraps' || normTarget === 'rolls') {
+    return normItem === 'wraps' || normItem === 'wrap' || normItem.includes('wrap');
+  }
+
+  // Flexible aliasing for Breads / Parathas:
+  if (normTarget === 'breads' || normTarget === 'parathas' || normTarget === 'breads-parathas') {
+    return normItem === 'breads' || normItem === 'parathas' || normItem.includes('bread');
+  }
+
+  // Healthy combos
+  if (normTarget === 'healthy' || normTarget === 'healthy-combos') {
+    return normItem.includes('healthy');
+  }
+
+  // Rice & Pulao
+  if (normTarget === 'rice' || normTarget === 'rice-pulao' || normTarget === 'pulao') {
+    return normItem.includes('rice') || normItem.includes('pulao');
+  }
+
+  // Add-ons
+  if (normTarget === 'add-ons' || normTarget === 'addons' || normTarget === 'extras') {
+    return normItem === 'add-ons' || normItem === 'addons' || normItem === 'extras';
+  }
+
+  return false;
+};
+
 export const MenuSection = () => {
   const {
     menuItems,
@@ -81,6 +152,14 @@ export const MenuSection = () => {
     return Array.from(map.values());
   }, [categories, menuItems]);
 
+  // Only display categories that actually have matching dishes in menuItems
+  const activeDisplayCategories = useMemo(() => {
+    return allCategories.filter(cat => {
+      if (cat.id === 'all') return true;
+      return menuItems.some(item => matchesCategory(item.category, cat.id));
+    });
+  }, [allCategories, menuItems]);
+
   const toggleCategoryCollapse = (catId) => {
     setCollapsedCategories(prev => ({
       ...prev,
@@ -92,7 +171,7 @@ export const MenuSection = () => {
   const filteredItems = useMemo(() => {
     return menuItems.filter(item => {
       // Category match
-      const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+      const matchesCat = matchesCategory(item.category, activeCategory);
       // Search match
       const matchesSearch = !searchQuery.trim() ||
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -104,29 +183,31 @@ export const MenuSection = () => {
         dietFilter === 'nonveg' ? !item.isVeg :
         dietFilter === 'special' ? item.isSpecial : true;
 
-      return matchesCategory && matchesSearch && matchesDiet;
+      return matchesCat && matchesSearch && matchesDiet;
     });
   }, [menuItems, activeCategory, searchQuery, dietFilter]);
 
   // Group items by category for structured listing
   const groupedSections = useMemo(() => {
-    const validCategories = allCategories.filter(c => c.id !== 'all');
+    const validCategories = activeDisplayCategories.filter(c => c.id !== 'all');
     return validCategories.map(cat => {
-      const itemsInCat = filteredItems.filter(item => item.category === cat.id);
+      const itemsInCat = filteredItems.filter(item => matchesCategory(item.category, cat.id));
       return {
         ...cat,
         items: itemsInCat
       };
-    }).filter(group => activeCategory === 'all' ? group.items.length > 0 : group.id === activeCategory);
-  }, [allCategories, filteredItems, activeCategory]);
+    }).filter(group => group.items.length > 0);
+  }, [activeDisplayCategories, filteredItems]);
 
   const scrollToCategory = (catId) => {
     setActiveCategory(catId);
     setIsBrowseMenuOpen(false);
-    const element = document.getElementById(`cat-section-${catId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setTimeout(() => {
+      const element = document.getElementById(`cat-section-${catId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
   };
 
   return (
@@ -341,8 +422,8 @@ export const MenuSection = () => {
               <span>All Dishes ({menuItems.length})</span>
             </button>
 
-            {allCategories.filter(c => c.id !== 'all').map(cat => {
-              const catCount = menuItems.filter(m => m.category === cat.id).length;
+            {activeDisplayCategories.filter(c => c.id !== 'all').map(cat => {
+              const catCount = menuItems.filter(m => matchesCategory(m.category, cat.id)).length;
               const isActive = activeCategory === cat.id;
               return (
                 <button
@@ -451,8 +532,8 @@ export const MenuSection = () => {
                   <span className="browse-count">{menuItems.length}</span>
                 </button>
 
-                {allCategories.filter(c => c.id !== 'all').map(cat => {
-                  const count = menuItems.filter(m => m.category === cat.id).length;
+                {activeDisplayCategories.filter(c => c.id !== 'all').map(cat => {
+                  const count = menuItems.filter(m => matchesCategory(m.category, cat.id)).length;
                   const isActive = activeCategory === cat.id;
                   return (
                     <button
