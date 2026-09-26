@@ -64,19 +64,25 @@ const MainContent = () => {
             <img src="/logo.png" alt="Desi Eats" style={{ height: 48, objectFit: 'contain' }} />
             <div>
               <h4 style={{ fontSize: '1.2rem', fontWeight: 700, fontFamily: 'var(--font-brand)' }}>desieats.online</h4>
-              <p style={{ fontSize: '0.85rem', opacity: 0.85 }}>Rajarhat Food Delivery & Takeaway Goodness</p>
+              <p style={{ fontSize: '0.85rem', color: '#fde68a', fontWeight: 700, margin: '2px 0 0' }}>HEALTHY. FRESH. DESI. GOOD FOOD, MADE WITH LOVE!</p>
+              <p style={{ fontSize: '0.8rem', opacity: 0.85, margin: '2px 0 0' }}>Eat Desi, Eat Best! • Made Fresh Daily</p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 20, fontSize: '0.9rem', opacity: 0.95, flexWrap: 'wrap', fontWeight: 600 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <MapPin size={16} color="#e5a024" />
-              Rajarhat Chowmatha / Chinar Park, Kolkata
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.85rem', opacity: 0.95, fontWeight: 600 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fef3c7' }}>
+              🕒 Timings: 12:00 PM – 3:15 PM & 6:30 PM – 11:00 PM (Monday Closed)
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fde68a' }}>
-              <Phone size={16} color="#e5a024" />
-              📞 6291288522
-            </span>
+            <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <MapPin size={15} color="#e5a024" />
+                Rajarhat Chowmatha / Chinar Park, Kolkata
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fde68a' }}>
+                <Phone size={15} color="#e5a024" />
+                📞 6291288522
+              </span>
+            </div>
           </div>
         </div>
 

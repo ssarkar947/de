@@ -30,7 +30,7 @@ export const AppProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
-  const MENU_SCHEMA_VERSION = 'v8_full_57_dishes_clean';
+  const MENU_SCHEMA_VERSION = 'v10_official_printed_flyer_2026';
 
   // Categories Management
   const [categories, setCategories] = useState(() => {
@@ -285,8 +285,29 @@ export const AppProvider = ({ children }) => {
     });
 
     const unsubCategories = subscribeToCollection('categories', (fsCategories) => {
-      if (fsCategories && fsCategories.length >= INITIAL_CATEGORIES.length) {
-        setCategories(fsCategories);
+      const validCatIds = new Set(INITIAL_CATEGORIES.map(c => c.id));
+      if (fsCategories && fsCategories.length > 0) {
+        // Clean out any old/stale categories not in new INITIAL_CATEGORIES
+        fsCategories.forEach(cat => {
+          if (cat.id && !validCatIds.has(cat.id)) {
+            deleteFirestoreDoc('categories', cat.id);
+          }
+        });
+        const validFsCategories = fsCategories.filter(cat => cat.id && validCatIds.has(cat.id));
+        const catMap = new Map();
+        INITIAL_CATEGORIES.forEach(c => catMap.set(c.id, c));
+        validFsCategories.forEach(c => catMap.set(c.id, c));
+        const mergedCategories = Array.from(catMap.values());
+        setCategories(mergedCategories);
+        localStorage.setItem('de_categories', JSON.stringify(mergedCategories));
+
+        // Ensure all new official categories are saved in Firestore
+        const existingCatIds = new Set(validFsCategories.map(c => c.id));
+        INITIAL_CATEGORIES.forEach(c => {
+          if (!existingCatIds.has(c.id)) {
+            saveFirestoreDoc('categories', c.id, c);
+          }
+        });
       } else {
         setCategories(INITIAL_CATEGORIES);
         INITIAL_CATEGORIES.forEach(c => saveFirestoreDoc('categories', c.id, c));
@@ -294,14 +315,23 @@ export const AppProvider = ({ children }) => {
     });
 
     const unsubMenu = subscribeToCollection('menu', (fsMenu) => {
+      const validItemIds = new Set(INITIAL_MENU.map(i => i.id));
       if (fsMenu && fsMenu.length > 0) {
-        // Clean out any stale old menu items with old ID format from Firestore
+        // Clean out any stale old menu items not present in the new official flyer
         fsMenu.forEach(item => {
-          if (item.id && (item.id.startsWith('de-nv-') || item.id.startsWith('de-v-') || item.id.startsWith('de-h-'))) {
+          if (item.id && !validItemIds.has(item.id)) {
             deleteFirestoreDoc('menu', item.id);
           }
         });
-        const validFsMenu = fsMenu.filter(item => item.id && !item.id.startsWith('de-nv-') && !item.id.startsWith('de-v-') && !item.id.startsWith('de-h-'));
+        const validFsMenu = fsMenu.filter(item => item.id && validItemIds.has(item.id));
+
+        // Ensure all new official flyer items are saved in Firestore
+        const existingIds = new Set(validFsMenu.map(i => i.id));
+        INITIAL_MENU.forEach(item => {
+          if (!existingIds.has(item.id)) {
+            saveFirestoreDoc('menu', item.id, item);
+          }
+        });
 
         const menuMap = new Map();
         INITIAL_MENU.forEach(item => menuMap.set(item.id, item));
@@ -824,15 +854,22 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const resetMenuToDefault = () => {
+  const resetMenuToDefault = async () => {
     setMenuItems(INITIAL_MENU);
     setCategories(INITIAL_CATEGORIES);
     localStorage.setItem('de_menu', JSON.stringify(INITIAL_MENU));
     localStorage.setItem('de_categories', JSON.stringify(INITIAL_CATEGORIES));
     localStorage.setItem('de_menu_version', MENU_SCHEMA_VERSION);
+
+    // Completely purge Firestore menu and categories to ensure no stale items remain
+    await deleteAllFirestoreDocs('menu');
+    await deleteAllFirestoreDocs('categories');
+    INITIAL_MENU.forEach(item => saveFirestoreDoc('menu', item.id, item));
+    INITIAL_CATEGORIES.forEach(cat => saveFirestoreDoc('categories', cat.id, cat));
+
     broadcastSync('UPDATE_MENU', INITIAL_MENU);
     broadcastSync('UPDATE_CATEGORIES', INITIAL_CATEGORIES);
-    showToast('Menu reset to default items!');
+    showToast('Menu & Categories updated to Official Printed Flyer!');
   };
 
   // Coupon CRUD

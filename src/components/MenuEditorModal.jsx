@@ -7,7 +7,7 @@ export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
   const currentItem = item || itemToEdit;
 
   const [name, setName] = useState(currentItem?.name || '');
-  const [category, setCategory] = useState(currentItem?.category || 'non-veg-combos');
+  const [category, setCategory] = useState(currentItem?.category || 'chicken-combos');
   const [price, setPrice] = useState(currentItem?.price ?? 149);
   const [isVeg, setIsVeg] = useState(currentItem?.isVeg ?? false);
   const [isSpecial, setIsSpecial] = useState(currentItem?.isSpecial ?? false);
@@ -28,7 +28,7 @@ export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
     const target = item || itemToEdit;
     if (target) {
       setName(target.name || '');
-      setCategory(target.category || 'non-veg-combos');
+      setCategory(target.category || 'chicken-combos');
       setPrice(target.price ?? 149);
       setIsVeg(target.isVeg ?? false);
       setIsSpecial(target.isSpecial ?? false);
@@ -38,7 +38,7 @@ export const MenuEditorModal = ({ item, itemToEdit, onClose }) => {
       setOptions(target.options || []);
     } else {
       setName('');
-      setCategory('non-veg-combos');
+      setCategory('chicken-combos');
       setPrice(149);
       setIsVeg(false);
       setIsSpecial(false);

@@ -185,8 +185,8 @@ export const MenuSection = () => {
                 <span>Rajarhat Chowmatha / Chinar Park (Kolkata)</span>
               </div>
               <span className="meta-sep">•</span>
-              <div className="outlet-meta-item">
-                <span><strong>₹200</strong> for two</span>
+              <div className="outlet-meta-item" style={{ color: '#b45309', fontWeight: 600 }}>
+                <span>🕒 12:00-3:15 PM & 6:30-11:00 PM (Mon Closed)</span>
               </div>
             </div>
 
