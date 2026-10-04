@@ -161,7 +161,7 @@ export const AppProvider = ({ children }) => {
             parsedOrders.forEach(o => {
               if (o && o.customerPhone) {
                 const clean = o.customerPhone.replace(/\D/g, '');
-                if (clean.length === 10) {
+                if (clean.length >= 10) {
                   const existing = customerMap.get(clean) || {
                     phone: clean,
                     name: o.customerName || 'Desi Foodie',
@@ -195,7 +195,7 @@ export const AppProvider = ({ children }) => {
           const parsedProf = JSON.parse(savedProfile);
           if (parsedProf && parsedProf.phone) {
             const clean = parsedProf.phone.replace(/\D/g, '');
-            if (clean.length === 10) {
+            if (clean.length >= 10) {
               const existing = customerMap.get(clean) || {
                 phone: clean,
                 ordersCount: 1,
@@ -399,7 +399,7 @@ export const AppProvider = ({ children }) => {
       newCustomersList.forEach(c => {
         if (c && c.phone) {
           const clean = c.phone.replace(/\D/g, '');
-          if (clean.length === 10) {
+          if (clean.length >= 10) {
             const existing = map.get(clean) || {
               phone: clean,
               ordersCount: 0,
@@ -451,7 +451,7 @@ export const AppProvider = ({ children }) => {
       orders.forEach(o => {
         if (o && o.customerPhone) {
           const clean = o.customerPhone.replace(/\D/g, '');
-          if (clean.length === 10) {
+          if (clean.length >= 10) {
             const existing = map.get(clean) || {
               phone: clean,
               name: o.customerName || 'Desi Foodie',
@@ -586,7 +586,7 @@ export const AppProvider = ({ children }) => {
             if (!inc || !inc.id) return;
             const existing = orderMap.get(inc.id) || (inc._docId ? orderMap.get(inc._docId) : null);
             if (!existing) {
-              orderMap.set(inc.id, { ...inc, status: normalizeOrderStatus(inc.status) });
+              orderMap.set(inc.id, { ...inc, status: normalizeOrderStatus(inc.status, inc) });
             } else {
               const incCompleted = isOrderCompleted(inc);
               const existCompleted = isOrderCompleted(existing);
@@ -602,9 +602,9 @@ export const AppProvider = ({ children }) => {
                 const incTime = new Date(inc.updatedAt || inc.createdAt || 0).getTime();
                 const existTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
                 if (incTime >= existTime) {
-                  orderMap.set(inc.id, { ...existing, ...inc, status: normalizeOrderStatus(inc.status) });
+                  orderMap.set(inc.id, { ...existing, ...inc, status: normalizeOrderStatus(inc.status, inc) });
                 } else {
-                  orderMap.set(inc.id, { ...inc, ...existing, status: normalizeOrderStatus(existing.status) });
+                  orderMap.set(inc.id, { ...inc, ...existing, status: normalizeOrderStatus(existing.status, existing) });
                 }
               }
             }
@@ -697,7 +697,7 @@ export const AppProvider = ({ children }) => {
           prev.forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
           fsUsers.forEach(u => {
             const clean = (u.phone || u.id || '').replace(/\D/g, '');
-            if (clean.length === 10) {
+            if (clean.length >= 10) {
               const existing = map.get(clean) || {};
               map.set(clean, { ...existing, ...u, phone: clean });
             }
@@ -717,7 +717,7 @@ export const AppProvider = ({ children }) => {
           prev.forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
           fsCustomers.forEach(c => {
             const clean = (c.phone || c.id || '').replace(/\D/g, '');
-            if (clean.length === 10) {
+            if (clean.length >= 10) {
               const existing = map.get(clean) || {};
               map.set(clean, { ...existing, ...c, phone: clean });
             }
