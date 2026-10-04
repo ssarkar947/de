@@ -4,6 +4,8 @@ import { MenuEditorModal } from './MenuEditorModal';
 import { CouponManager } from './CouponManager';
 import { PinCodeManager } from './PinCodeManager';
 import { CategoryManager } from './CategoryManager';
+import { CustomerEditorModal } from './CustomerEditorModal';
+import { CustomerImportModal } from './CustomerImportModal';
 import {
   Bell,
   BellOff,
@@ -28,7 +30,10 @@ import {
   Phone,
   MessageSquare,
   Gift,
-  Award
+  Award,
+  UserPlus,
+  FileUp,
+  RefreshCw
 } from 'lucide-react';
 import { openWhatsApp, generateCustomerStatusMessage, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
 import { isOrderCompleted, normalizeOrderStatus } from '../utils/orderStatusHelper';
@@ -39,6 +44,11 @@ export const AdminDashboard = () => {
     updateOrderStatus,
     deleteOrder,
     clearAllOrders,
+    customers = [],
+    saveCustomer,
+    deleteCustomer,
+    importCustomers,
+    syncCustomersFromOrders,
     menuItems = [],
     deleteMenuItem,
     toggleItemStock,
@@ -55,6 +65,11 @@ export const AdminDashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [selectedPrepTimes, setSelectedPrepTimes] = useState({});
+
+  // Customer CRM Management Modals
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [isCustomerImportOpen, setIsCustomerImportOpen] = useState(false);
 
   // Completed Orders & Customer Search Filters
   const [completedSearch, setCompletedSearch] = useState('');
@@ -127,50 +142,85 @@ export const AdminDashboard = () => {
     );
   });
 
-  // Unique Customers Aggregation (CRM)
+  // Comprehensive Customer CRM Aggregation (Combines Persistent Customer Database + Real-time Orders)
   const customersList = useMemo(() => {
     const customerMap = new Map();
 
+    // 1. Seed with all saved customers from database (both historical and newly registered)
+    (customers || []).forEach(cust => {
+      if (cust && cust.phone) {
+        const cleanPhone = cust.phone.replace(/\D/g, '');
+        customerMap.set(cleanPhone, {
+          phone: cleanPhone,
+          name: cust.name || 'Desi Customer',
+          address: cust.address || '',
+          pincode: cust.pincode || '700135',
+          email: cust.email || '',
+          ordersCount: Number(cust.ordersCount) || 0,
+          completedCount: Number(cust.completedCount) || 0,
+          totalSpent: Number(cust.totalSpent) || 0,
+          qualifyingOrdersCount: Number(cust.qualifyingOrdersCount) || 0,
+          claimedRewardsCount: Number(cust.claimedRewardsCount) || 0,
+          notes: cust.notes || '',
+          lastOrderDate: cust.lastOrderDate || cust.joinedAt || new Date().toISOString(),
+          joinedAt: cust.joinedAt || new Date().toISOString()
+        });
+      }
+    });
+
+    // 2. Cross-reference and aggregate all past and current orders
     orders.forEach(o => {
-      const phone = o.customerPhone || 'unknown';
-      if (!customerMap.has(phone)) {
-        customerMap.set(phone, {
-          phone,
+      if (!o || !o.customerPhone) return;
+      const cleanPhone = o.customerPhone.replace(/\D/g, '');
+      if (cleanPhone.length < 10) return;
+
+      if (!customerMap.has(cleanPhone)) {
+        customerMap.set(cleanPhone, {
+          phone: cleanPhone,
           name: o.customerName || 'Desi Foodie',
           address: o.address || '',
           pincode: o.pincode || '700135',
+          email: '',
           ordersCount: 0,
           completedCount: 0,
           totalSpent: 0,
-          lastOrderDate: o.createdAt,
-          qualifyingOrdersCount: 0
+          qualifyingOrdersCount: 0,
+          claimedRewardsCount: 0,
+          notes: '',
+          lastOrderDate: o.createdAt || new Date().toISOString(),
+          joinedAt: o.createdAt || new Date().toISOString()
         });
       }
 
-      const c = customerMap.get(phone);
-      c.ordersCount += 1;
-      if (o.status === 'COMPLETED') c.completedCount += 1;
-      c.totalSpent += Number(o.totalAmount || o.subtotal || 0);
-      if (Number(o.totalAmount || o.subtotal || 0) >= 200) {
-        c.qualifyingOrdersCount += 1;
+      const c = customerMap.get(cleanPhone);
+      // If customer record was created without orders, reflect the order
+      if (c.ordersCount === 0) {
+        c.ordersCount = 1;
+        if (o.status === 'COMPLETED') c.completedCount = 1;
+        c.totalSpent = Number(o.totalAmount || o.subtotal || 0);
+        if (Number(o.totalAmount || o.subtotal || 0) >= 200) {
+          c.qualifyingOrdersCount = 1;
+        }
       }
       if (new Date(o.createdAt) > new Date(c.lastOrderDate)) {
         c.lastOrderDate = o.createdAt;
         if (o.address) c.address = o.address;
-        if (o.customerName) c.name = o.customerName;
+        if (o.customerName && o.customerName !== 'Desi Foodie') c.name = o.customerName;
       }
     });
 
-    return Array.from(customerMap.values());
-  }, [orders]);
+    return Array.from(customerMap.values()).sort((a, b) => new Date(b.lastOrderDate || 0) - new Date(a.lastOrderDate || 0));
+  }, [customers, orders]);
 
   const filteredCustomers = customersList.filter(c => {
     if (!customerSearch.trim()) return true;
     const q = customerSearch.toLowerCase();
     return (
-      c.name.toLowerCase().includes(q) ||
-      c.phone.includes(q) ||
-      c.address.toLowerCase().includes(q)
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.phone && c.phone.includes(q)) ||
+      (c.address && c.address.toLowerCase().includes(q)) ||
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      (c.notes && c.notes.toLowerCase().includes(q))
     );
   });
 
@@ -813,12 +863,16 @@ export const AdminDashboard = () => {
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button
-                onClick={exportCustomersCSV}
+                type="button"
+                onClick={() => {
+                  setEditingCustomer(null);
+                  setIsCustomerModalOpen(true);
+                }}
                 style={{
                   background: '#164324',
                   color: 'white',
                   border: 'none',
-                  padding: '8px 16px',
+                  padding: '8px 14px',
                   borderRadius: 8,
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -828,7 +882,68 @@ export const AdminDashboard = () => {
                   gap: 6
                 }}
               >
-                <Download size={15} /> Export Customers CSV
+                <UserPlus size={16} /> Add Customer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsCustomerImportOpen(true)}
+                style={{
+                  background: '#fef3c7',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <FileUp size={16} /> Import Old Customers
+              </button>
+
+              <button
+                type="button"
+                onClick={() => syncCustomersFromOrders()}
+                style={{
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+                title="Aggregate and re-sync any missing orders to the customer database"
+              >
+                <RefreshCw size={15} /> Sync All Orders
+              </button>
+
+              <button
+                type="button"
+                onClick={exportCustomersCSV}
+                style={{
+                  background: '#f1f5f9',
+                  color: '#334155',
+                  border: '1px solid #cbd5e1',
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <Download size={15} /> Export CSV
               </button>
             </div>
           </div>
@@ -838,7 +953,7 @@ export const AdminDashboard = () => {
             <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 12 }} />
             <input
               type="text"
-              placeholder="Search customer by Name, Phone, or Delivery Address..."
+              placeholder="Search customer by Name, Phone, Email, Delivery Address or Notes..."
               value={customerSearch}
               onChange={e => setCustomerSearch(e.target.value)}
               style={{ width: '100%', padding: '10px 14px 10px 42px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
@@ -849,28 +964,33 @@ export const AdminDashboard = () => {
             <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
               <Users size={40} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
               <h4>No Customer Records Found</h4>
-              <p style={{ fontSize: '0.85rem' }}>Customer data is automatically captured on profile creation and order placement.</p>
+              <p style={{ fontSize: '0.85rem' }}>Customer data is permanently preserved in the CRM database. Click <b>Add Customer</b> or <b>Import Old Customers</b> to input records.</p>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#475569', fontWeight: 800 }}>
-                    <th style={{ padding: 12 }}>Customer Name</th>
+                    <th style={{ padding: 12 }}>Customer Details</th>
                     <th style={{ padding: 12 }}>Mobile Number</th>
                     <th style={{ padding: 12 }}>Delivery Address</th>
                     <th style={{ padding: 12, textAlign: 'center' }}>Total Orders</th>
                     <th style={{ padding: 12, textAlign: 'right' }}>Lifetime Spend</th>
                     <th style={{ padding: 12, textAlign: 'center' }}>Stamps Progress</th>
                     <th style={{ padding: 12, textAlign: 'center' }}>Quick WhatsApp</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCustomers.map((cust, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={cust.phone || idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: 12 }}>
                         <div style={{ fontWeight: 800, color: '#164324' }}>{cust.name}</div>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Last active: {new Date(cust.lastOrderDate).toLocaleDateString()}</span>
+                        {cust.email && <div style={{ fontSize: '0.72rem', color: '#6b7280' }}>✉️ {cust.email}</div>}
+                        {cust.notes && <div style={{ fontSize: '0.72rem', color: '#854d0e', fontStyle: 'italic' }}>📝 {cust.notes}</div>}
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                          Last active: {cust.lastOrderDate ? new Date(cust.lastOrderDate).toLocaleDateString() : 'N/A'}
+                        </span>
                       </td>
 
                       <td style={{ padding: 12 }}>
@@ -902,7 +1022,7 @@ export const AdminDashboard = () => {
 
                       <td style={{ padding: 12, textAlign: 'center' }}>
                         <a
-                          href={`https://wa.me/91${cust.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${cust.name}, greetings from Desi Eats Rajarhat! 🍛`)}`}
+                          href={`https://wa.me/91${cust.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${cust.name}, greetings from Desi Eats! 🍛`)}`}
                           target="_blank"
                           rel="noreferrer"
                           style={{
@@ -920,6 +1040,58 @@ export const AdminDashboard = () => {
                         >
                           <MessageSquare size={13} /> Chat
                         </a>
+                      </td>
+
+                      <td style={{ padding: 12, textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCustomer(cust);
+                              setIsCustomerModalOpen(true);
+                            }}
+                            style={{
+                              background: '#f1f5f9',
+                              border: '1px solid #cbd5e1',
+                              padding: '5px 8px',
+                              borderRadius: 6,
+                              cursor: 'pointer',
+                              color: '#334155',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: '0.75rem',
+                              fontWeight: 700
+                            }}
+                            title="Edit Customer"
+                          >
+                            <Edit2 size={13} /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Delete customer ${cust.name || cust.phone} from database?`)) {
+                                deleteCustomer(cust.phone);
+                              }
+                            }}
+                            style={{
+                              background: '#fee2e2',
+                              border: '1px solid #fca5a5',
+                              padding: '5px 8px',
+                              borderRadius: 6,
+                              cursor: 'pointer',
+                              color: '#dc2626',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: '0.75rem',
+                              fontWeight: 700
+                            }}
+                            title="Delete Customer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1117,6 +1289,24 @@ export const AdminDashboard = () => {
             setIsMenuModalOpen(false);
             setEditingItem(null);
           }}
+        />
+      )}
+
+      {/* Modal for Customer Add/Edit */}
+      {isCustomerModalOpen && (
+        <CustomerEditorModal
+          customer={editingCustomer}
+          onClose={() => {
+            setIsCustomerModalOpen(false);
+            setEditingCustomer(null);
+          }}
+        />
+      )}
+
+      {/* Modal for Bulk Customer Import */}
+      {isCustomerImportOpen && (
+        <CustomerImportModal
+          onClose={() => setIsCustomerImportOpen(false)}
         />
       )}
     </div>

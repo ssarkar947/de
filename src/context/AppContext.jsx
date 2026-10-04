@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { DEFAULT_PINCODES } from '../data/initialPincodes';
 import { INITIAL_MENU, INITIAL_CATEGORIES } from '../data/initialMenu';
 import { INITIAL_COUPONS } from '../data/initialCoupons';
+import { INITIAL_CUSTOMERS } from '../data/initialCustomers';
 import {
   subscribeToCollection,
   saveFirestoreDoc,
@@ -127,6 +128,104 @@ export const AppProvider = ({ children }) => {
   });
   const [isAuthProfileModalOpen, setIsAuthProfileModalOpen] = useState(false);
 
+  // Persistent Customer CRM Database Management (Both Old and New Customers)
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('de_customers');
+      const customerMap = new Map();
+
+      // Seed with INITIAL_CUSTOMERS (historical records)
+      (INITIAL_CUSTOMERS || []).forEach(c => {
+        if (c && c.phone) customerMap.set(c.phone.replace(/\D/g, ''), c);
+      });
+
+      // Merge saved customers from localStorage
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(c => {
+            if (c && c.phone) {
+              const clean = c.phone.replace(/\D/g, '');
+              customerMap.set(clean, { ...(customerMap.get(clean) || {}), ...c, phone: clean });
+            }
+          });
+        }
+      }
+
+      // Merge customers from all past and current orders
+      const savedOrders = localStorage.getItem('de_orders');
+      if (savedOrders) {
+        try {
+          const parsedOrders = JSON.parse(savedOrders);
+          if (Array.isArray(parsedOrders)) {
+            parsedOrders.forEach(o => {
+              if (o && o.customerPhone) {
+                const clean = o.customerPhone.replace(/\D/g, '');
+                if (clean.length === 10) {
+                  const existing = customerMap.get(clean) || {
+                    phone: clean,
+                    name: o.customerName || 'Desi Foodie',
+                    address: o.address || '',
+                    pincode: o.pincode || '700135',
+                    ordersCount: 0,
+                    completedCount: 0,
+                    totalSpent: 0,
+                    qualifyingOrdersCount: 0,
+                    lastOrderDate: o.createdAt || new Date().toISOString(),
+                    joinedAt: o.createdAt || new Date().toISOString()
+                  };
+                  existing.ordersCount = Math.max(existing.ordersCount, 1);
+                  if (o.status === 'COMPLETED') existing.completedCount += 1;
+                  existing.totalSpent += Number(o.totalAmount || o.subtotal || 0);
+                  if (Number(o.totalAmount || o.subtotal || 0) >= 200) existing.qualifyingOrdersCount += 1;
+                  if (o.address) existing.address = o.address;
+                  if (o.customerName) existing.name = o.customerName;
+                  customerMap.set(clean, existing);
+                }
+              }
+            });
+          }
+        } catch (e) {}
+      }
+
+      // Merge user profile if present
+      const savedProfile = localStorage.getItem('de_user_profile');
+      if (savedProfile) {
+        try {
+          const parsedProf = JSON.parse(savedProfile);
+          if (parsedProf && parsedProf.phone) {
+            const clean = parsedProf.phone.replace(/\D/g, '');
+            if (clean.length === 10) {
+              const existing = customerMap.get(clean) || {
+                phone: clean,
+                ordersCount: 1,
+                completedCount: 0,
+                totalSpent: 0,
+                qualifyingOrdersCount: 0
+              };
+              customerMap.set(clean, {
+                ...existing,
+                name: parsedProf.name || existing.name || 'Desi Foodie',
+                address: parsedProf.address || existing.address || '',
+                pincode: parsedProf.pincode || existing.pincode || '700135',
+                email: parsedProf.email || existing.email || '',
+                claimedRewardsCount: parsedProf.claimedRewardsCount || existing.claimedRewardsCount || 0,
+                joinedAt: parsedProf.joinedAt || existing.joinedAt || new Date().toISOString()
+              });
+            }
+          }
+        } catch (e) {}
+      }
+
+      const merged = Array.from(customerMap.values());
+      localStorage.setItem('de_customers', JSON.stringify(merged));
+      return merged;
+    } catch (e) {
+      console.warn('Customers state initialization error:', e);
+      return INITIAL_CUSTOMERS;
+    }
+  });
+
   // Free Dish Loyalty Reward Applied in Cart
   const [isFreeDishRewardApplied, setIsFreeDishRewardApplied] = useState(false);
 
@@ -199,6 +298,192 @@ export const AppProvider = ({ children }) => {
   // Notification Toast message
   const [toastMessage, setToastMessage] = useState(null);
 
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4500);
+  };
+
+  const broadcastSync = (type, data) => {
+    try {
+      const channel = new BroadcastChannel('desieats_sync_channel');
+      channel.postMessage({ type, data });
+      channel.close();
+    } catch (e) {}
+  };
+
+  // Persistent Customer CRM Database CRUD & Sync Methods
+  const saveCustomer = (customerData) => {
+    if (!customerData || !customerData.phone) return;
+    const cleanPhone = customerData.phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) return;
+
+    let updatedList = [];
+    setCustomers(prev => {
+      const map = new Map();
+      (INITIAL_CUSTOMERS || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+      (prev || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+
+      const existing = map.get(cleanPhone) || {
+        phone: cleanPhone,
+        ordersCount: 0,
+        completedCount: 0,
+        totalSpent: 0,
+        qualifyingOrdersCount: 0,
+        claimedRewardsCount: 0,
+        joinedAt: new Date().toISOString()
+      };
+
+      const merged = {
+        ...existing,
+        ...customerData,
+        phone: cleanPhone,
+        name: customerData.name || existing.name || 'Desi Foodie',
+        address: customerData.address !== undefined ? customerData.address : (existing.address || ''),
+        pincode: customerData.pincode || existing.pincode || '700135',
+        email: customerData.email !== undefined ? customerData.email : (existing.email || ''),
+        ordersCount: customerData.ordersCount !== undefined ? Number(customerData.ordersCount) : existing.ordersCount,
+        completedCount: customerData.completedCount !== undefined ? Number(customerData.completedCount) : existing.completedCount,
+        totalSpent: customerData.totalSpent !== undefined ? Number(customerData.totalSpent) : existing.totalSpent,
+        qualifyingOrdersCount: customerData.qualifyingOrdersCount !== undefined ? Number(customerData.qualifyingOrdersCount) : existing.qualifyingOrdersCount,
+        claimedRewardsCount: customerData.claimedRewardsCount !== undefined ? Number(customerData.claimedRewardsCount) : existing.claimedRewardsCount,
+        notes: customerData.notes !== undefined ? customerData.notes : (existing.notes || ''),
+        lastOrderDate: customerData.lastOrderDate || existing.lastOrderDate || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      map.set(cleanPhone, merged);
+      updatedList = Array.from(map.values());
+      localStorage.setItem('de_customers', JSON.stringify(updatedList));
+      return updatedList;
+    });
+
+    saveFirestoreDoc('customers', cleanPhone, customerData);
+    saveFirestoreDoc('users', cleanPhone, customerData);
+    broadcastSync('UPDATE_CUSTOMERS', updatedList);
+    showToast(`Saved customer ${customerData.name || cleanPhone}`);
+  };
+
+  const deleteCustomer = (phone) => {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '');
+    let updatedList = [];
+    setCustomers(prev => {
+      updatedList = prev.filter(c => c.phone.replace(/\D/g, '') !== cleanPhone);
+      localStorage.setItem('de_customers', JSON.stringify(updatedList));
+      return updatedList;
+    });
+    deleteFirestoreDoc('customers', cleanPhone);
+    deleteFirestoreDoc('users', cleanPhone);
+    broadcastSync('UPDATE_CUSTOMERS', updatedList);
+    showToast(`Deleted customer ${cleanPhone} from database`);
+  };
+
+  const importCustomers = (newCustomersList) => {
+    if (!Array.isArray(newCustomersList) || newCustomersList.length === 0) return;
+    let updatedList = [];
+    setCustomers(prev => {
+      const map = new Map();
+      (INITIAL_CUSTOMERS || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+      (prev || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+
+      newCustomersList.forEach(c => {
+        if (c && c.phone) {
+          const clean = c.phone.replace(/\D/g, '');
+          if (clean.length === 10) {
+            const existing = map.get(clean) || {
+              phone: clean,
+              ordersCount: 0,
+              completedCount: 0,
+              totalSpent: 0,
+              qualifyingOrdersCount: 0,
+              claimedRewardsCount: 0,
+              joinedAt: new Date().toISOString()
+            };
+            const merged = {
+              ...existing,
+              ...c,
+              phone: clean,
+              name: c.name || existing.name || 'Desi Customer',
+              address: c.address || existing.address || '',
+              pincode: c.pincode || existing.pincode || '700135',
+              email: c.email || existing.email || '',
+              ordersCount: Math.max(existing.ordersCount, Number(c.ordersCount || 1)),
+              totalSpent: (existing.totalSpent || 0) + Number(c.totalSpent || 0),
+              notes: c.notes || existing.notes || 'Imported customer',
+              lastOrderDate: c.lastOrderDate || existing.lastOrderDate || new Date().toISOString()
+            };
+            map.set(clean, merged);
+            saveFirestoreDoc('customers', clean, merged);
+            saveFirestoreDoc('users', clean, merged);
+          }
+        }
+      });
+
+      updatedList = Array.from(map.values());
+      localStorage.setItem('de_customers', JSON.stringify(updatedList));
+      return updatedList;
+    });
+    broadcastSync('UPDATE_CUSTOMERS', updatedList);
+    showToast(`Successfully imported ${newCustomersList.length} customers to database!`);
+  };
+
+  const syncCustomersFromOrders = () => {
+    let updatedList = [];
+    setCustomers(prev => {
+      const map = new Map();
+      (INITIAL_CUSTOMERS || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+      (prev || []).forEach(c => {
+        if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+      });
+
+      orders.forEach(o => {
+        if (o && o.customerPhone) {
+          const clean = o.customerPhone.replace(/\D/g, '');
+          if (clean.length === 10) {
+            const existing = map.get(clean) || {
+              phone: clean,
+              name: o.customerName || 'Desi Foodie',
+              address: o.address || '',
+              pincode: o.pincode || '700135',
+              ordersCount: 0,
+              completedCount: 0,
+              totalSpent: 0,
+              qualifyingOrdersCount: 0,
+              claimedRewardsCount: 0,
+              lastOrderDate: o.createdAt || new Date().toISOString(),
+              joinedAt: o.createdAt || new Date().toISOString()
+            };
+            existing.ordersCount = Math.max(existing.ordersCount, 1);
+            if (o.status === 'COMPLETED') existing.completedCount += 1;
+            existing.totalSpent += Number(o.totalAmount || o.subtotal || 0);
+            if (Number(o.totalAmount || o.subtotal || 0) >= 200) existing.qualifyingOrdersCount += 1;
+            if (o.address) existing.address = o.address;
+            if (o.customerName) existing.name = o.customerName;
+            map.set(clean, existing);
+          }
+        }
+      });
+
+      updatedList = Array.from(map.values());
+      localStorage.setItem('de_customers', JSON.stringify(updatedList));
+      return updatedList;
+    });
+    broadcastSync('UPDATE_CUSTOMERS', updatedList);
+    showToast(`Synced customer database with all orders!`);
+  };
+
   // Customer Profile Management Methods
   const loginCustomer = async (profileData) => {
     const cleanPhone = (profileData.phone || '').replace(/\D/g, '');
@@ -223,6 +508,7 @@ export const AppProvider = ({ children }) => {
     if (profile.phone) {
       localStorage.setItem('de_saved_phone', profile.phone);
       saveFirestoreDoc('users', profile.phone, profile);
+      saveCustomer(profile);
     }
     showToast(`Welcome, ${profile.name}! 🍛 Profile activated.`);
   };
@@ -234,6 +520,7 @@ export const AppProvider = ({ children }) => {
       if (merged.phone) {
         localStorage.setItem('de_saved_phone', merged.phone);
         saveFirestoreDoc('users', merged.phone, merged);
+        saveCustomer(merged);
       }
       return merged;
     });
@@ -402,12 +689,54 @@ export const AppProvider = ({ children }) => {
       }
     });
 
+    const unsubUsers = subscribeToCollection('users', (fsUsers) => {
+      if (fsUsers && fsUsers.length > 0) {
+        setCustomers(prev => {
+          const map = new Map();
+          (INITIAL_CUSTOMERS || []).forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
+          prev.forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
+          fsUsers.forEach(u => {
+            const clean = (u.phone || u.id || '').replace(/\D/g, '');
+            if (clean.length === 10) {
+              const existing = map.get(clean) || {};
+              map.set(clean, { ...existing, ...u, phone: clean });
+            }
+          });
+          const merged = Array.from(map.values());
+          localStorage.setItem('de_customers', JSON.stringify(merged));
+          return merged;
+        });
+      }
+    });
+
+    const unsubCustomers = subscribeToCollection('customers', (fsCustomers) => {
+      if (fsCustomers && fsCustomers.length > 0) {
+        setCustomers(prev => {
+          const map = new Map();
+          (INITIAL_CUSTOMERS || []).forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
+          prev.forEach(c => map.set(c.phone.replace(/\D/g, ''), c));
+          fsCustomers.forEach(c => {
+            const clean = (c.phone || c.id || '').replace(/\D/g, '');
+            if (clean.length === 10) {
+              const existing = map.get(clean) || {};
+              map.set(clean, { ...existing, ...c, phone: clean });
+            }
+          });
+          const merged = Array.from(map.values());
+          localStorage.setItem('de_customers', JSON.stringify(merged));
+          return merged;
+        });
+      }
+    });
+
     return () => {
       unsubOrders();
       unsubCategories();
       unsubMenu();
       unsubCoupons();
       unsubPincodes();
+      unsubUsers();
+      unsubCustomers();
     };
   }, []);
 
@@ -482,6 +811,8 @@ export const AppProvider = ({ children }) => {
           setMenuItems(data);
         } else if (type === 'UPDATE_COUPONS') {
           setCoupons(data);
+        } else if (type === 'UPDATE_CUSTOMERS') {
+          setCustomers(data);
         }
       };
     } catch (e) {
@@ -523,6 +854,11 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
+    localStorage.setItem('de_customers', JSON.stringify(customers));
+    broadcastSync('UPDATE_CUSTOMERS', customers);
+  }, [customers]);
+
+  useEffect(() => {
     localStorage.setItem('de_cart', JSON.stringify(cart));
   }, [cart]);
 
@@ -537,21 +873,6 @@ export const AppProvider = ({ children }) => {
       localStorage.removeItem('de_active_order_id');
     }
   }, [activeOrderId]);
-
-  const broadcastSync = (type, data) => {
-    try {
-      const channel = new BroadcastChannel('desieats_sync_channel');
-      channel.postMessage({ type, data });
-      channel.close();
-    } catch (e) {}
-  };
-
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4500);
-  };
 
   // Secure View Request (Password Verification)
   const requestProtectedView = (targetView) => {
@@ -755,6 +1076,46 @@ export const AppProvider = ({ children }) => {
       setUserProfile(updatedProf);
       localStorage.setItem('de_user_profile', JSON.stringify(updatedProf));
       saveFirestoreDoc('users', cleanPhone, updatedProf);
+
+      // Also persist to CRM customer database
+      setCustomers(prev => {
+        const map = new Map();
+        (INITIAL_CUSTOMERS || []).forEach(c => {
+          if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+        });
+        (prev || []).forEach(c => {
+          if (c && c.phone) map.set(c.phone.replace(/\D/g, ''), c);
+        });
+        const existing = map.get(cleanPhone) || {
+          phone: cleanPhone,
+          ordersCount: 0,
+          completedCount: 0,
+          totalSpent: 0,
+          qualifyingOrdersCount: 0,
+          joinedAt: now.toISOString()
+        };
+        const updatedCust = {
+          ...existing,
+          phone: cleanPhone,
+          name: customerDetails.name || existing.name || 'Desi Foodie',
+          email: customerDetails.email || existing.email || '',
+          address: customerDetails.address || existing.address || '',
+          pincode: selectedPincode || existing.pincode || '700135',
+          ordersCount: (existing.ordersCount || 0) + 1,
+          totalSpent: (existing.totalSpent || 0) + grandTotal,
+          qualifyingOrdersCount: (existing.qualifyingOrdersCount || 0) + (grandTotal >= 200 ? 1 : 0),
+          claimedRewardsCount: newClaimedCount,
+          lastOrderDate: now.toISOString(),
+          lastOrderId: newOrder.id,
+          updatedAt: now.toISOString()
+        };
+        map.set(cleanPhone, updatedCust);
+        const list = Array.from(map.values());
+        localStorage.setItem('de_customers', JSON.stringify(list));
+        saveFirestoreDoc('customers', cleanPhone, updatedCust);
+        broadcastSync('UPDATE_CUSTOMERS', list);
+        return list;
+      });
     }
 
     setOrders(prev => [newOrder, ...prev]);
@@ -1061,6 +1422,11 @@ export const AppProvider = ({ children }) => {
       updateOrderStatus,
       deleteOrder,
       clearAllOrders,
+      customers,
+      saveCustomer,
+      deleteCustomer,
+      importCustomers,
+      syncCustomersFromOrders,
       addPincode,
       togglePincodeActive,
       removePincode,
