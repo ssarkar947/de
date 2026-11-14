@@ -27,14 +27,56 @@ const firebaseConfig = {
 let app = null;
 let db = null;
 let isFirebaseConnected = false;
+let isFirestoreHealthy = false;
+let firestoreErrorDetails = { code: 'checking', message: 'Checking database access...' };
+const statusListeners = new Set();
+
+export const onFirestoreStatusChange = (callback) => {
+  statusListeners.add(callback);
+  callback({ healthy: isFirestoreHealthy, error: firestoreErrorDetails });
+  return () => statusListeners.delete(callback);
+};
+
+export const notifyStatus = (healthy, err = null) => {
+  isFirestoreHealthy = healthy;
+  firestoreErrorDetails = err;
+  statusListeners.forEach(cb => {
+    try { cb({ healthy, error: err }); } catch (e) {}
+  });
+};
+
+export const checkFirestoreHealth = async () => {
+  if (!db) {
+    const errObj = { code: 'no-db', message: 'Database not initialized' };
+    notifyStatus(false, errObj);
+    return { healthy: false, error: errObj };
+  }
+  try {
+    const colRef = collection(db, 'orders');
+    const snap = await getDocs(query(colRef, orderBy('createdAt', 'desc')));
+    notifyStatus(true, null);
+    return { healthy: true, size: snap.size };
+  } catch (err) {
+    const isPerm = err?.code === 'permission-denied' || String(err?.message).includes('permissions') || String(err).includes('PERMISSION_DENIED');
+    const errObj = {
+      code: isPerm ? 'permission-denied' : (err?.code || 'error'),
+      message: err?.message || 'Database access denied'
+    };
+    notifyStatus(false, errObj);
+    return { healthy: false, error: errObj };
+  }
+};
 
 try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   isFirebaseConnected = true;
   console.log("🔥 Connected to Sourav's Firebase Project [desieats-online]!");
+  // Immediate background health check
+  checkFirestoreHealth().catch(() => {});
 } catch (e) {
   console.warn("⚠️ Firebase fallback mode active:", e);
+  notifyStatus(false, { code: 'init-error', message: e?.message });
 }
 
 export { app, db, isFirebaseConnected };
@@ -47,6 +89,7 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
     const q = orderField ? query(colRef, orderBy(orderField, 'desc')) : colRef;
     
     return onSnapshot(q, (snapshot) => {
+      notifyStatus(true, null);
       const data = snapshot.docs.map(d => {
         const docData = d.data() || {};
         return {
@@ -58,6 +101,11 @@ export const subscribeToCollection = (collectionName, callback, orderField = nul
       callback(data);
     }, (error) => {
       console.warn(`Firestore collection [${collectionName}] read issue:`, error);
+      const isPerm = error?.code === 'permission-denied' || String(error?.message).includes('permissions') || String(error).includes('PERMISSION_DENIED');
+      notifyStatus(false, {
+        code: isPerm ? 'permission-denied' : (error?.code || 'error'),
+        message: error?.message || `Failed to read ${collectionName}`
+      });
     });
   } catch (err) {
     console.warn(`Failed to subscribe to ${collectionName}:`, err);
@@ -99,9 +147,15 @@ export const saveFirestoreDoc = async (collectionName, docId, data) => {
       } catch (altErr) {}
     }
 
+    notifyStatus(true, null);
     return true;
   } catch (err) {
     console.warn(`Firestore write error [${collectionName}/${docId}]:`, err);
+    const isPerm = err?.code === 'permission-denied' || String(err?.message).includes('permissions') || String(err).includes('PERMISSION_DENIED');
+    notifyStatus(false, {
+      code: isPerm ? 'permission-denied' : (err?.code || 'error'),
+      message: err?.message || `Failed to write ${collectionName}/${docId}`
+    });
     return false;
   }
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Clock, CheckCircle, Flame, Bike, Store, Bell, X, Sparkles, Banknote, QrCode, MessageSquare, Share2, Phone } from 'lucide-react';
-import { openWhatsApp, generateOrderConfirmationMessage, RESTAURANT_PHONE } from '../utils/whatsappHelper';
+import { openWhatsApp, generateOrderConfirmationMessage, generateKitchenAlertMessage, RESTAURANT_PHONE } from '../utils/whatsappHelper';
 
 export const OrderTracker = () => {
   const { orders, activeOrderId, isOrderTrackerOpen, setIsOrderTrackerOpen } = useApp();
@@ -208,57 +208,58 @@ export const OrderTracker = () => {
           <div style={{
             marginTop: 16,
             background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            border: '1px solid #86efac',
+            border: '2px solid #86efac',
             borderRadius: 14,
             padding: 16,
             display: 'flex',
             flexDirection: 'column',
-            gap: 10
+            gap: 12
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#25d366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MessageSquare size={16} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#25d366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MessageSquare size={18} />
               </div>
               <div>
-                <strong style={{ fontSize: '0.88rem', color: '#166534', display: 'block' }}>WhatsApp Order Confirmation</strong>
-                <span style={{ fontSize: '0.75rem', color: '#15803d' }}>Save your receipt or contact Desi Eats kitchen</span>
+                <strong style={{ fontSize: '0.92rem', color: '#166534', display: 'block' }}>Instant WhatsApp Kitchen Alert</strong>
+                <span style={{ fontSize: '0.78rem', color: '#15803d' }}>Send order directly to Desi Eats kitchen to ensure instant preparation</span>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
+            <button
+              type="button"
+              onClick={() => openWhatsApp(RESTAURANT_PHONE, generateKitchenAlertMessage(order))}
+              style={{
+                background: '#25d366',
+                color: 'white',
+                border: 'none',
+                padding: '12px 16px',
+                borderRadius: 10,
+                fontSize: '0.88rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 4px 12px rgba(37, 211, 102, 0.35)',
+                width: '100%'
+              }}
+            >
+              <MessageSquare size={17} /> 📲 Send Order to Kitchen WhatsApp (Instant Confirmation)
+            </button>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <button
                 type="button"
                 onClick={() => openWhatsApp(order.customerPhone, generateOrderConfirmationMessage(order))}
                 style={{
-                  background: '#25d366',
-                  color: 'white',
-                  border: 'none',
+                  background: 'white',
+                  color: '#166534',
+                  border: '1px solid #86efac',
                   padding: '9px 12px',
                   borderRadius: 8,
                   fontSize: '0.78rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)'
-                }}
-              >
-                <Share2 size={13} /> Send to My WhatsApp
-              </button>
-
-              <button
-                type="button"
-                onClick={() => openWhatsApp(RESTAURANT_PHONE, `Hello Desi Eats Kitchen! I have placed Order #${order.id} (₹${order.totalAmount}). Please confirm my order.`)}
-                style={{
-                  background: '#164324',
-                  color: 'white',
-                  border: 'none',
-                  padding: '9px 12px',
-                  borderRadius: 8,
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -266,7 +267,28 @@ export const OrderTracker = () => {
                   gap: 6
                 }}
               >
-                <Phone size={13} /> Chat with Kitchen
+                <Share2 size={13} /> Save on My WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openWhatsApp(RESTAURANT_PHONE, `Hello Desi Eats Kitchen! Following up on Order #${order.id}.`)}
+                style={{
+                  background: '#164324',
+                  color: 'white',
+                  border: 'none',
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6
+                }}
+              >
+                <Phone size={13} /> Call / Chat Kitchen
               </button>
             </div>
           </div>

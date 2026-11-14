@@ -9,7 +9,9 @@ import {
   getFirestoreDoc,
   deleteFirestoreDoc,
   deleteAllFirestoreDocs,
-  isFirebaseConnected
+  isFirebaseConnected,
+  checkFirestoreHealth,
+  onFirestoreStatusChange
 } from '../firebase';
 import { isOrderCompleted, normalizeOrderStatus, formatOrderDateTime } from '../utils/orderStatusHelper';
 
@@ -32,6 +34,29 @@ export const AppProvider = ({ children }) => {
   const [pendingTargetView, setPendingTargetView] = useState(null);
 
   const MENU_SCHEMA_VERSION = 'v12_official_flyer_78_dishes_fixed';
+  // Real-time Firestore Health & Permissions Status
+  const [firestoreHealth, setFirestoreHealth] = useState({ healthy: false, error: { code: 'checking', message: 'Checking database access...' } });
+
+  useEffect(() => {
+    const unsub = onFirestoreStatusChange((status) => {
+      setFirestoreHealth(status);
+    });
+    checkFirestoreHealth().then(status => {
+      setFirestoreHealth({ healthy: status.healthy, error: status.error || null });
+    });
+    return unsub;
+  }, []);
+
+  const retryFirestoreConnection = async () => {
+    const res = await checkFirestoreHealth();
+    if (res.healthy) {
+      showToast('✅ Database connected and operational!');
+    } else {
+      showToast('⚠️ Database issue: ' + (res.error?.message || 'Access blocked'));
+    }
+    return res;
+  };
+
 
   // Force clean migration if version mismatch or if cached menu is outdated
   const checkAndMigrateMenuCache = () => {
@@ -1432,7 +1457,10 @@ export const AppProvider = ({ children }) => {
       removePincode,
       toastMessage,
       showToast,
-      isFirebaseConnected
+      isFirebaseConnected,
+      firestoreHealth,
+      checkFirestoreHealth,
+      retryFirestoreConnection
     }}>
       {children}
     </AppContext.Provider>

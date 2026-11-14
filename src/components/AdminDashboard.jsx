@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { openWhatsApp, generateCustomerStatusMessage, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
 import { isOrderCompleted, normalizeOrderStatus } from '../utils/orderStatusHelper';
+import { FirestoreHealthBanner } from './FirestoreHealthBanner';
 
 export const AdminDashboard = () => {
   const {
@@ -366,6 +367,9 @@ export const AdminDashboard = () => {
           </button>
         </div>
       )}
+
+      {/* Firebase Firestore Connection & Permission Health */}
+      <FirestoreHealthBanner />
 
       {/* Navigation Tabs */}
       <div className="admin-nav-tabs">

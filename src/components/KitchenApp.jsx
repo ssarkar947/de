@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { openWhatsApp, generateOrderConfirmationMessage } from '../utils/whatsappHelper';
 import { isOrderCompleted, normalizeOrderStatus } from '../utils/orderStatusHelper';
+import { FirestoreHealthBanner } from './FirestoreHealthBanner';
 
 export const KitchenApp = () => {
   const {
@@ -194,6 +195,9 @@ export const KitchenApp = () => {
           </button>
         </div>
       </div>
+
+      {/* Firebase Firestore Connection & Permission Health */}
+      <FirestoreHealthBanner />
 
       {/* Filter Navigation Tabs */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 24, overflowX: 'auto', paddingBottom: 4 }}>
