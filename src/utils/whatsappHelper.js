@@ -53,8 +53,7 @@ ${order.orderMode === 'delivery' ? `*Address:* ${order.address} (PIN: ${order.pi
 ${itemsText}
 ━━━━━━━━━━━━━━━━━━
 *Total:* ₹${order.totalAmount} (${(order.paymentMethod || 'CASH').toUpperCase()})
-${order.instructions ? `*Special Note:* ${order.instructions}\n` : ''}
-Manage Order: https://desieats.online/#kitchen`
+${order.instructions ? `*Special Note:* ${order.instructions}` : ''}`.trim()
   );
 };
 
